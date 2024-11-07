@@ -19,7 +19,7 @@ architecture Behavioral of dibuja is
 signal RED_in, GRN_in, BLU_in : std_logic_vector (3 downto 0);
 
 begin
-    dibuja: process(eje_x, eje_y)
+    dibuja: process(eje_x, eje_y, codigo_color)
     begin
 
         case codigo_color is
