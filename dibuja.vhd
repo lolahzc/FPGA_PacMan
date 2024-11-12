@@ -15,7 +15,6 @@ entity dibuja is
 end dibuja;
 
 architecture Behavioral of dibuja is
-signal RED_in, GRN_in, BLU_in : std_logic_vector (3 downto 0);
 signal REDaux, GRNaux, BLUaux : std_logic_vector (3 downto 0);
 signal fila: std_logic_vector(3 downto 0);
 signal columna:  std_logic_vector (4 downto 0);
@@ -24,7 +23,11 @@ begin
     dibuja: process(eje_x, eje_y,codigo_color)
     begin
 
-        case codigo_color is
+      
+    
+if (unsigned(eje_x)>0 and unsigned(eje_x) <512/2 and unsigned(eje_y)>0 and unsigned(eje_y)<256) then
+
+  case codigo_color is
             when "000" => -- Negro
                 REDaux <= "0000";
                 BLUaux<= "0000";
@@ -51,8 +54,14 @@ begin
                 GRNaux <= "0000";
                 
             end case;
-    end process;
+            else 
+                    REDaux <= "1111";
+                BLUaux<= "1111";
+                GRNaux <= "1111";
 
+
+    end if;
+    end process;
 --RED <= std_logic_vector(RED_in);
 --GRN <= std_logic_vector(GRN_in);
 --BLU <= std_logic_vector(BLU_in);
