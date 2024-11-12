@@ -1,1 +1,133 @@
-hola juan
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 28.10.2024 13:16:35
+-- Design Name: 
+-- Module Name: toptransmision - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+use IEEE.NUMERIC_STD.ALL;
+
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity Top is
+Port ( 
+    clk : in STD_LOGIC; 
+    reset : in STD_LOGIC; 
+    RGB:out std_logic_vector(11 downto 0);
+    HS: out std_logic;
+    VS: out std_logic
+    );
+end Top;
+
+architecture Behavioral of Top is
+
+    signal addraIn,addrbIn: STD_LOGIC_VECTOR(8 DOWNTO 0);
+    signal dataIn,datbIn:STD_LOGIC_VECTOR(2 DOWNTO 0);
+    signal datbOut:STD_LOGIC_VECTOR(2 DOWNTO 0);
+    signal ejx,ejy:STD_LOGIC_VECTOR(9 DOWNTO 0);
+    signal RGBaux,RGBOutaux :STD_LOGIC_VECTOR(11 DOWNTO 0);
+
+   component blk_mem_gen_0 is
+         PORT (
+    clka : IN STD_LOGIC;
+    ena : IN STD_LOGIC;
+    wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+    addra : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
+    dina : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+    douta : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+    clkb : IN STD_LOGIC;
+    enb : IN STD_LOGIC;
+    web : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+    addrb : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
+    dinb : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+    doutb : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
+  );
+end component;
+
+    component dibuja is
+    Port ( 
+                eje_x : in STD_LOGIC_VECTOR (9 downto 0);
+                eje_y : in STD_LOGIC_VECTOR (9 downto 0);
+           
+                codigo_color : in std_logic_vector (2 downto 0);
+                direccion : out STD_LOGIC_VECTOR (8 downto 0);
+                RGB : out STD_LOGIC_VECTOR (11 downto 0));
+end component;
+
+
+    component VGA_DRIVER is
+    Port(
+     clk : in STD_LOGIC; 
+     reset : in STD_LOGIC; 
+     RGBin : in STD_LOGIC_VECTOR (11 downto 0);
+     VS : out STD_LOGIC; 
+     HS : out STD_LOGIC;  
+     eje_x : out STD_LOGIC_VECTOR (9 downto 0);
+     eje_y : out STD_LOGIC_VECTOR (9 downto 0); 
+     RGB : out STD_LOGIC_VECTOR (11 downto 0));
+    end  component;
+
+begin
+
+
+memoria :  blk_mem_gen_0 
+    port map(
+        ena =>'1',
+        wea =>"1",
+        web=>"1",
+        addra =>addraIn,
+        dina=>dataIn,
+        enb=>'1',
+        clka => clk,
+        clkb =>clk,
+        addrb =>addrbIn,
+        dinb => (others =>'0'),
+        doutb =>datbOut  
+    );
+pintor : dibuja
+  port map(
+           eje_x => ejx,
+           eje_y =>ejy,
+           
+           codigo_color => datbOut,
+           direccion => addrbIn,
+           
+          RGB => RGBaux
+    );
+ driver: VGA_DRIVER
+   port map(
+     clk => clk, 
+     reset=> reset, 
+     RGBin=> RGBaux,
+     VS =>VS, 
+     HS =>HS,  
+     eje_x =>ejx,
+     eje_y =>ejy, 
+     RGB =>RGBOutaux
+    );
+        addraIn <= (others =>'0');
+        dataIn <= (others =>'0');
+ RGB<=RGBOutaux;
+end Behavioral;
