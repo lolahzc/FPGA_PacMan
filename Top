@@ -95,8 +95,8 @@ begin
 memoria :  blk_mem_gen_0 
     port map(
         ena =>'1',
-        wea =>"1",
-        web=>"1",
+        wea =>"0",
+        web=>"0",
         addra =>addraIn,
         dina=>dataIn,
         enb=>'1',
