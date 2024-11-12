@@ -35,9 +35,7 @@ entity Top is
 Port ( 
     clk : in STD_LOGIC; 
     reset : in STD_LOGIC; 
-    BLU : out std_logic_vector(2 downto 0);
-    RED: out std_logic_vector(2 downto 0);
-    GRN: out std_logic_vector(2 downto 0);
+    RGB:out std_logic_vector(11 downto 0);
     HS: out std_logic;
     VS: out std_logic
     );
@@ -48,7 +46,7 @@ architecture Behavioral of Top is
     signal addraIn,addrbIn: STD_LOGIC_VECTOR(8 DOWNTO 0);
     signal dataIn,datbIn:STD_LOGIC_VECTOR(2 DOWNTO 0);
     signal datbOut:STD_LOGIC_VECTOR(2 DOWNTO 0);
-    signal ejx,ejy:STD_LOGIC_VECTOR(2 DOWNTO 0);
+    signal ejx,ejy:STD_LOGIC_VECTOR(9 DOWNTO 0);
     signal RGBaux,RGBOutaux :STD_LOGIC_VECTOR(11 DOWNTO 0);
 
    component blk_mem_gen_0 is
@@ -74,7 +72,7 @@ end component;
                 eje_y : in STD_LOGIC_VECTOR (9 downto 0);
            
                 codigo_color : in std_logic_vector (2 downto 0);
-                direccion : out STD_LOGIC_VECTOR (9 downto 0);
+                direccion : out STD_LOGIC_VECTOR (8 downto 0);
                 RGB : out STD_LOGIC_VECTOR (11 downto 0));
 end component;
 
@@ -83,7 +81,7 @@ end component;
     Port(
      clk : in STD_LOGIC; 
      reset : in STD_LOGIC; 
-     RGBin : in STD_LOGIC_VECTOR (9 downto 0);
+     RGBin : in STD_LOGIC_VECTOR (11 downto 0);
      VS : out STD_LOGIC; 
      HS : out STD_LOGIC;  
      eje_x : out STD_LOGIC_VECTOR (9 downto 0);
@@ -105,7 +103,7 @@ memoria :  blk_mem_gen_0
         clka => clk,
         clkb =>clk,
         addrb =>addrbIn,
-        dinb =>datbIn,
+        dinb => (others =>'0'),
         doutb =>datbOut  
     );
 pintor : dibuja
@@ -129,6 +127,7 @@ pintor : dibuja
      eje_y =>ejy, 
      RGB =>RGBOutaux
     );
- 
-
+        addraIn <= (others =>'0');
+        dataIn <= (others =>'0');
+ RGB<=RGBOutaux;
 end Behavioral;
