@@ -9,13 +9,16 @@ entity dibuja is
            eje_y : in STD_LOGIC_VECTOR (9 downto 0);
            
            codigo_color : in std_logic_vector (2 downto 0);
-           RGB : out STD_LOGIC_VECTOR (11 downto 0));
+           RGB : out STD_LOGIC_VECTOR (11 downto 0);
+           direccion: out STD_LOGIC_VECTOR (8 downto 0));
 
 end dibuja;
 
 architecture Behavioral of dibuja is
 signal RED_in, GRN_in, BLU_in : std_logic_vector (3 downto 0);
 signal REDaux, GRNaux, BLUaux : std_logic_vector (3 downto 0);
+signal fila: std_logic_vector(3 downto 0);
+signal columna:  std_logic_vector (4 downto 0);
 
 begin
     dibuja: process(eje_x, eje_y,codigo_color)
@@ -53,6 +56,8 @@ begin
 --RED <= std_logic_vector(RED_in);
 --GRN <= std_logic_vector(GRN_in);
 --BLU <= std_logic_vector(BLU_in);
-
+fila <= eje_y(7 downto 4);
+columna <= eje_x(8 downto 4);
+direccion <= fila & columna;
 RGB <= REDaux & BLUaux & GRNaux;
 end Behavioral;
