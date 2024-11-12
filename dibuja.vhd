@@ -68,5 +68,5 @@ if (unsigned(eje_x)>0 and unsigned(eje_x) <512/2 and unsigned(eje_y)>0 and unsig
 fila <= eje_y(7 downto 4);
 columna <= eje_x(8 downto 4);
 direccion <= fila & columna;
-RGB <= REDaux & BLUaux & GRNaux;
+RGB <= REDaux  & GRNaux & BLUaux;
 end Behavioral;
