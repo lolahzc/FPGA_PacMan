@@ -1,0 +1,145 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 24.10.2024 12:50:33
+-- Design Name: 
+-- Module Name: fsm - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+use IEEE.NUMERIC_STD.ALL;
+
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity fsmPacMan is
+    Port (
+        clk : in STD_LOGIC;
+        reset : in STD_LOGIC;
+        refresh : in STD_LOGIC;
+        move: in STD_LOGIC;
+        udlrIn : in STD_LOGIC_VECTOR(3 downto 0);
+        addressAIn: in STD_LOGIC_VECTOR(8 DOWNTO 0);
+        addressAOut: out STD_LOGIC_VECTOR(8 DOWNTO 0);
+        dAIn : in STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dAOut : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+        enableMem: out std_logic;
+        done: out STD_LOGIC;
+        write : out STD_LOGIC);
+
+end fsmPacMan;
+
+architecture Behavioral of fsmPacMan is
+    type estados is (reposo, botonDireccion, Movimiento, MuroEnMov,MuroNoMov,  MovDir, botonDireccion2, noMov);
+    signal posx, p_posx: std_logic_vector(3 downto 0);
+    signal posy, p_posy: std_logic_vector(4 downto 0);
+    signal last_udlr,p_last_udlr: std_logic_vector(3 downto 0);
+    signal p_estado, estado: estados;
+    signal addressPacman : std_logic_vector(8 downto 0);
+
+begin
+
+p_estado <= estado;
+--Salidas
+--Tengo que saber donde está el pacman en todo momento
+--Para ver si se está movimiendo
+dAOut <= "000";     --Si en un estado no sabe qué pintar, pinta vacío
+posx <= "0";  -- Si en un estado no está definida la posición del pacman, la pone a 0
+posy <= "0";
+write <= '0'; -- Si no sabe qué hacer que no escriba  
+enableMem <= '1';
+     sync: process(clk,reset)
+    begin
+        if(reset = '1') then
+            estado <= reposo;
+
+        elsif(rising_edge(clk)) then
+            estado <= p_estado;
+            last_udlr <= p_last_udlr;
+            posy <= p_posy;
+            posx <= p_posx;
+        end if;
+    end process;
+    
+    comb :process(estado,refresh)
+    begin
+
+    case estados is
+
+        when reposo => --En reposo dibuja el pacman
+            enableMem <= '0';
+            if(move = '1') then
+                
+                p_posx <= "1"; --Pos inicial
+                p_posy <= "1"; --Pos inicial
+                write <= '1';
+                dAOut <= "011"; --Dibuja el pacman
+                p_estado <= botonDireccion;
+
+            else
+                p_estado <= reposo;
+            end if;
+
+        when botonDireccion =>
+            if(udlrIN = "1000")then -- Mirar esto
+                addressAOut <=6 (p_posy - 1)& posx
+            else
+                p_estado <= Movimiento;
+
+            end if;
+
+        when Movimiento =>
+            if(PacmanEnMov = '1')then
+              p_estado <= MuroEnMov;
+            else p_estado <= MuroNoMov; --Si el movimiento no es válido vuelve al estado anterior
+            end if;
+            
+        when MuroEnMov =>
+            --Mira si DatIn Hay un muro, hay que poner addressAOut como la posición a leer
+            if((udlrIn ="1000" and dAIn ="001") | (udlrIn ="0100" and dAIn ="001")| (udlrIn ="0100" and dAIn ="001")| (udlrIn ="1000" and dAIn ="001"))then
+            
+           
+            
+                mantieneDireccion
+                p_estado <= botonDireccion2;
+            else
+                MoverDirecciondelBoton
+                 p_estado <= botonDireccion2;
+            end if;
+
+         when botonDireccion2 =>   
+            if(no se pulsa nada)
+                     mantieneDireccion
+                      p_estado <= botonDireccion2;
+            else
+            p_estado <= MuroEnMov
+         when MuroNoMov =>
+         
+            if(nohaymuro)
+                 p_estado <= botonDireccion2;
+             else
+             p_estado <= botonDireccion;
+                             end case;
+    end process;
+    
+
+end Behavioral;
