@@ -43,6 +43,7 @@ end Top;
 
 architecture Behavioral of Top is
 
+    signal refreshAux: STD_LOGIC;
     signal addraIn,addrbIn: STD_LOGIC_VECTOR(8 DOWNTO 0);
     signal dataIn,datbIn:STD_LOGIC_VECTOR(2 DOWNTO 0);
     signal datbOut:STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -83,7 +84,8 @@ end component;
      reset : in STD_LOGIC; 
      RGBin : in STD_LOGIC_VECTOR (11 downto 0);
      VS : out STD_LOGIC; 
-     HS : out STD_LOGIC;  
+     HS : out STD_LOGIC;
+     refresh : out STD_LOGIC;  
      eje_x : out STD_LOGIC_VECTOR (9 downto 0);
      eje_y : out STD_LOGIC_VECTOR (9 downto 0); 
      RGB : out STD_LOGIC_VECTOR (11 downto 0));
@@ -125,9 +127,11 @@ pintor : dibuja
      HS =>HS,  
      eje_x =>ejx,
      eje_y =>ejy, 
-     RGB =>RGBOutaux
+     RGB =>RGBOutaux,
+     refresh => refreshAux
     );
         addraIn <= (others =>'0');
         dataIn <= (others =>'0');
  RGB<=RGBOutaux;
 end Behavioral;
+
