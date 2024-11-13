@@ -28,24 +28,25 @@ begin
 if (unsigned(eje_x)>0 and unsigned(eje_x) <512/2 and unsigned(eje_y)>0 and unsigned(eje_y)<256) then
 
   case codigo_color is
-            when "000" => -- Negro
+            when "000" => -- Vacío -> negro
                 REDaux <= "0000";
                 BLUaux<= "0000";
                 GRNaux <= "0000";
             
-            when "001" => -- Blanco
-                REDaux <= "1111";
-                BLUaux<= "1111";
+            when "001" => -- Muros -> grises
+                REDaux <= "0101";
+                BLUaux <= "0101";
+                GRNaux <= "0101";
+
+
+            when "010" => -- Bolas -> verdes
+                REDaux <= "0000";
+                BLUaux<= "0000";
                 GRNaux <= "1111";
 
-            when "010" => -- Amarillo
+            when "011" => -- Pacman -> amarillo 
                 REDaux <= "1111";
                 BLUaux<= "1111";
-                GRNaux <= "0000";
-
-            when "011" => -- Rojo 
-                REDaux <= "1111";
-                BLUaux<= "0000";
                 GRNaux <= "0000";
                 
             when others => 
