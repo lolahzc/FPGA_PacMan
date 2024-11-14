@@ -119,10 +119,31 @@ end component;
             udlrcc : out std_logic_vector(3 downto 0)
             );
        end component;
+        
+        component mov_fantasma is
+        Port (random_number_in : in std_logic_vector (3 downto 0);
+            udlr_ghost : out std_logic_vector(3 downto 0)
+            );
+        end component;
+
+        component LFSR_Random_Generator is
+            Port ( clk : in std_logic;
+            reset : in std_logic;
+            random_number_out : out std_logic_vector(4 downto 0)
+            );
+        end component;
        
        
   
 begin
+
+num_random : LFSR_Random_Generator
+    port map(
+    clk => clk,
+    reset => reset,
+    random_number_out => random_number_in
+    );
+
 botones : gestion_botones 
     port map(
     up => up,
