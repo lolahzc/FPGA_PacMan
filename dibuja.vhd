@@ -25,7 +25,7 @@ begin
 
       
     
-if (unsigned(eje_x)>0 and unsigned(eje_x) <512/2 and unsigned(eje_y)>0 and unsigned(eje_y)<256) then
+if (unsigned(eje_x)>0 and unsigned(eje_x) <512 and unsigned(eje_y)>0 and unsigned(eje_y)<256) then
 
   case codigo_color is
             when "000" => -- Vacío -> negro
