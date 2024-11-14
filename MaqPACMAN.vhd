@@ -42,6 +42,9 @@ begin
             last_udlr <= (others => '0');
             done <= '0';
             write <= "0";
+            done_reg <= '0';
+            pacmanEnMov <= '0';
+            done_reg <= '0';
        
         elsif rising_edge(clk) then
             estado <= p_estado;
@@ -57,21 +60,24 @@ begin
 
             done <= done_reg ;
             done_reg <= '0'; -- Desactivate 'done_reg' in each refresh
+            
             write <= "0";
 
         end if;
     end process;
 
-    comb: process(estado, refresh, move, udlrIn, dAIn)
+    comb: process(estado, refresh, move, udlrIn, dAIn, p_posx, p_posy, posx, posy, pacmanEnMov)
     begin
         -- Default outputs
         dAOut <= "000";
         enableMem <= '1';
         write <= "0";
         p_estado <= estado;
-        pacmanEnMov <= '0';
-        done_reg <= '0';
+        addressAOut <= (others => '0');
+        p_posx <= posx;
+        p_posy <= posy;    
 
+    
         case estado is
             when reposo =>
                 if move = '1' and refresh = '1' then
