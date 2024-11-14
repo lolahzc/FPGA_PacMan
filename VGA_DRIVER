@@ -35,12 +35,13 @@
     Port (
      clk : in STD_LOGIC; 
      reset : in STD_LOGIC; 
-     RGBin : in STD_LOGIC_VECTOR (9 downto 0);
-  
+     RGBin : in STD_LOGIC_VECTOR (11 downto 0);
      VS : out STD_LOGIC; 
      HS : out STD_LOGIC; 
-     
-     RGB : out STD_LOGIC_VECTOR (11 downto 0));
+     eje_x : out STD_LOGIC_VECTOR (9 downto 0);
+     eje_y : out STD_LOGIC_VECTOR (9 downto 0); 
+     RGB : out STD_LOGIC_VECTOR (11 downto 0);
+     refresh : out STD_LOGIC);
     end VGA_DRIVER;
     
     architecture Behavioral of VGA_DRIVER is
@@ -85,17 +86,7 @@
         BLU : out STD_LOGIC_VECTOR (3 downto 0)); 
         end component;
         
-    component dibuja 
-    Port( 
-    eje_x : in STD_LOGIC_VECTOR (9 downto 0);
-    eje_y : in STD_LOGIC_VECTOR (9 downto 0); 
-    clk : in  std_logic;
-    refresh: in  std_logic;
-    reset : in  std_logic;
-    RED : out STD_LOGIC_VECTOR(3 downto 0); 
-    GRN : out STD_LOGIC_VECTOR(3 downto 0); 
-    BLU : out STD_LOGIC_VECTOR(3 downto 0)); 
-end component;
+
 
         
     begin
@@ -166,9 +157,9 @@ end component;
             port map(
             blank_h =>s5, 
             blank_v =>s9,
-            RED_in =>raux,
-            GRN_in =>gaux, 
-            BLU_in =>baux, 
+            RED_in =>RGBin(3 downto 0),
+            GRN_in =>RGBin(7 downto 4), 
+            BLU_in =>RGBin(11 downto 8), 
             RED => rOUTaux,
             GRN => gOUTaux,
             BLU => bOUTaux
@@ -176,8 +167,10 @@ end component;
             
             
             
+    --Salidas nuevas
             
-        
+    eje_x <=ejx;
+    eje_y <=ejy;
     RGB <= rOUTaux & gOUTaux & bOUTaux;
-    
+    refresh <= s3;
     end Behavioral;
