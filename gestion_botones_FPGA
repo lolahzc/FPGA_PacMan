@@ -37,7 +37,7 @@ entity gestion_botones is
   down : in std_logic;
   left : in std_logic;
   right : in std_logic;
-  udlr : out STD_LOGIC_VECTOR(3 downto 0)
+  udlrcc : out std_logic_vector(3 downto 0)
   );
 end gestion_botones;
 
@@ -54,19 +54,19 @@ begin
     begin
         case udlr_in is
             when "1000" => -- up
-                udlr <= "1000";
+                udlrcc <= "1000";
                 
             when "0100" => -- down
-                udlr <= "0100";
+                udlrcc <= "0100";
                 
             when "0010" => -- right
-                udlr <= "0010";
+                udlrcc <= "0010";
                 
             when "0001" => -- left
-                udlr <= "0100";
+                udlrcc <= "0100";
                 
             when others => -- none (or more than one at the same time)
-                udlr <= "0000";
+                udlrcc <= "0000";
         end case;
     end process;
 
