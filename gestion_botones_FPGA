@@ -37,6 +37,7 @@ entity gestion_botones is
   down : in std_logic;
   left : in std_logic;
   right : in std_logic;
+  move : out std_logic;
   udlrcc : out std_logic_vector(3 downto 0)
   );
 end gestion_botones;
@@ -51,20 +52,22 @@ begin
     udlr_in <= up & down & right & left;
 
     process (udlr_in)  -- Sensibilidad a las señales relevantes
+    
     begin
+    move <= '0';
         case udlr_in is
             when "1000" => -- up
                 udlrcc <= "1000";
-                
+                move <='1';
             when "0100" => -- down
                 udlrcc <= "0100";
-                
+                move <='1';
             when "0010" => -- right
                 udlrcc <= "0010";
-                
+                move <='1';
             when "0001" => -- left
                 udlrcc <= "0100";
-                
+                move <='1';
             when others => -- none (or more than one at the same time)
                 udlrcc <= "0000";
         end case;
