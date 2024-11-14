@@ -74,7 +74,7 @@ begin
 
         case estado is
             when reposo =>
-                if move = '1' then
+                if move = '1' and refresh = '1' then
                     p_posx <= "0001";  -- Initial X position
                     p_posy <= "00001"; -- Initial Y position
                     dAOut <= "011";    -- Draw Pac-Man
@@ -83,20 +83,22 @@ begin
                 end if;
 
             when botonDireccion =>
-                if udlrIn = "1000" then  -- UP direction
-                    addressAOut <= std_logic_vector(unsigned(p_posy) - 1) & posx;
-                    p_estado <= movimiento;
-                elsif udlrIn = "0100" then  -- DOWN direction
-                    addressAOut <= std_logic_vector(unsigned(p_posy) + 1) & posx;
-                    p_estado <= movimiento;
-                elsif udlrIn = "0010" then  -- LEFT direction
-                    addressAOut <= p_posy & std_logic_vector(unsigned(posx) - 1);
-                    p_estado <= movimiento;
-                elsif udlrIn = "0001" then  -- RIGHT direction
-                    addressAOut <= p_posy & std_logic_vector(unsigned(posx) + 1);
-                    p_estado <= movimiento;
-                else
-                    p_estado <= reposo;
+                if refresh = '1' then
+                    if udlrIn = "1000" then  -- UP direction
+                        addressAOut <= std_logic_vector(unsigned(p_posy) - 1) & posx;
+                        p_estado <= movimiento;
+                    elsif udlrIn = "0100" then  -- DOWN direction
+                        addressAOut <= std_logic_vector(unsigned(p_posy) + 1) & posx;
+                        p_estado <= movimiento;
+                    elsif udlrIn = "0010" then  -- LEFT direction
+                        addressAOut <= p_posy & std_logic_vector(unsigned(posx) - 1);
+                        p_estado <= movimiento;
+                    elsif udlrIn = "0001" then  -- RIGHT direction
+                        addressAOut <= p_posy & std_logic_vector(unsigned(posx) + 1);
+                        p_estado <= movimiento;
+                    else
+                        p_estado <= reposo;
+                    end if;
                 end if;
 
             when movimiento =>
@@ -120,7 +122,7 @@ begin
                 end if;
 
             when botonDireccion2 =>
-                if move = '1' then  
+                if move = '1' and refresh = '1' then  
                     p_estado <= muroEnMov;
                 else
                     p_estado <= noMov;
