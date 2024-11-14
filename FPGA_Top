@@ -49,7 +49,8 @@ architecture Behavioral of Top is
     signal addraIn,addrbIn: STD_LOGIC_VECTOR(8 DOWNTO 0);
     signal dataIn,datbIn:STD_LOGIC_VECTOR(2 DOWNTO 0);
     signal dataOut,datbOut:STD_LOGIC_VECTOR(2 DOWNTO 0);
-    signal ejx,ejy,udlr :STD_LOGIC_VECTOR(9 DOWNTO 0);
+    signal udlr:STD_LOGIC_VECTOR(3 DOWNTO 0); 
+    signal ejx,ejy :STD_LOGIC_VECTOR(9 DOWNTO 0);
     signal RGBaux,RGBOutaux :STD_LOGIC_VECTOR(11 DOWNTO 0);
 
    component blk_mem_gen_0 is
@@ -106,10 +107,10 @@ end component;
         dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
         enableMem    : out STD_LOGIC;
         done         : out STD_LOGIC;
-        write        : out STD_LOGIC
+        write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
         );
         end component;
-      component BotonesCC  is 
+      component gestion_botones  is 
       Port ( up : in std_logic;
             down : in std_logic;
             left : in std_logic;
@@ -122,7 +123,7 @@ end component;
        
   
 begin
-botones : BotonesCC 
+botones : gestion_botones 
     port map(
     up => up,
     down => down,
@@ -140,13 +141,13 @@ comecocos :  MaqPACMAN
         refresh  => refreshAux,    
         move => move  ,      
         udlrIn  => udlr,     
-        addressAIn  =>open ,
+        addressAIn  =>"000000000" ,
         addressAOut  =>addraIn,
         dAIn     =>dataOut,    
         dAOut       =>dataIn, 
         enableMem    =>enableComecocos,
         done         =>open,
-        write        => std_logic(writeComeCocos)
+        write        => writeComeCocos
         );
     
 
