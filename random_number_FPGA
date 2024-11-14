@@ -1,0 +1,57 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 14.11.2024 14:14:18
+-- Design Name: 
+-- Module Name: random_number - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity LFSR_Random_Generator is
+    Port ( clk       : in std_logic;           -- Reloj de entrada
+           reset     : in std_logic;           -- Reset
+           random_number_out : out std_logic_vector(3 downto 0)  -- Salida de 4 bits
+           );
+end LFSR_Random_Generator;
+
+architecture Behavioral of LFSR_Random_Generator is
+
+    signal lfsr : std_logic_vector(3 downto 0) := "1010"; -- Semilla inicial
+    signal feedback : std_logic;
+
+begin
+
+    -- Proceso que genera los números pseudoaleatorios en cada flanco de subida del reloj
+    process(clk, reset)
+    begin
+        if reset = '1' then
+            -- Si se activa el reset, se carga la semilla inicial
+            lfsr <= "01101001"; -- Semilla inicial
+        elsif rising_edge(clk) then
+            -- Cálculo del feedback: XOR de los bits especificados (taps)
+            feedback <= lfsr(3) xor lfsr(2); -- Taps 3, 2
+            -- Desplazamiento y retroalimentación: el bit de feedback se coloca en el bit más significativo
+            lfsr <= feedback & lfsr(3 downto 1);
+        end if;
+    end process;
+
+    -- La salida del generador aleatorio es el valor del registro LFSR
+    random_number_out <= lfsr;
+
+end Behavioral;
