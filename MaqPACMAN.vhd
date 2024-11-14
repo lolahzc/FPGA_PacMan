@@ -1,11 +1,100 @@
--- Máquina de Estados PacMan
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 28.10.2024 13:16:35
+-- Design Name: 
+-- Module Name: toptransmision - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
-entity MaqPACMAN is
-    Port (
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity Top is
+Port ( 
+    clk : in STD_LOGIC; 
+    reset : in STD_LOGIC; 
+    up,down,left,right : in STD_LOGIC;
+    RGB:out std_logic_vector(11 downto 0);
+    HS: out std_logic;
+    VS: out std_logic
+    );
+end Top;
+
+architecture Behavioral of Top is
+
+    signal refreshAux,move,enableComecocos: STD_LOGIC;
+    signal writeComeCocos : STD_LOGIC_VECTOR(0 DOWNTO 0);
+    signal addraIn,addrbIn: STD_LOGIC_VECTOR(8 DOWNTO 0);
+    signal dataIn,datbIn:STD_LOGIC_VECTOR(2 DOWNTO 0);
+    signal dataOut,datbOut:STD_LOGIC_VECTOR(2 DOWNTO 0);
+    signal ejx,ejy,udlr :STD_LOGIC_VECTOR(9 DOWNTO 0);
+    signal RGBaux,RGBOutaux :STD_LOGIC_VECTOR(11 DOWNTO 0);
+
+   component blk_mem_gen_0 is
+         PORT (
+    clka : IN STD_LOGIC;
+    ena : IN STD_LOGIC;
+    wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+    addra : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
+    dina : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+    douta : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+    clkb : IN STD_LOGIC;
+    enb : IN STD_LOGIC;
+    web : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+    addrb : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
+    dinb : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+    doutb : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
+  );
+end component;
+
+    component dibuja is
+    Port ( 
+                eje_x : in STD_LOGIC_VECTOR (9 downto 0);
+                eje_y : in STD_LOGIC_VECTOR (9 downto 0);
+           
+                codigo_color : in std_logic_vector (2 downto 0);
+                direccion : out STD_LOGIC_VECTOR (8 downto 0);
+                RGB : out STD_LOGIC_VECTOR (11 downto 0));
+end component;
+
+
+    component VGA_DRIVER is
+    Port(
+     clk : in STD_LOGIC; 
+     reset : in STD_LOGIC; 
+     RGBin : in STD_LOGIC_VECTOR (11 downto 0);
+     VS : out STD_LOGIC; 
+     HS : out STD_LOGIC;
+     refresh : out STD_LOGIC;  
+     eje_x : out STD_LOGIC_VECTOR (9 downto 0);
+     eje_y : out STD_LOGIC_VECTOR (9 downto 0); 
+     RGB : out STD_LOGIC_VECTOR (11 downto 0));
+    end  component;
+    
+    component MaqPACMAN is
+        Port(
         clk          : in STD_LOGIC;
         reset        : in STD_LOGIC;
         refresh      : in STD_LOGIC;
@@ -18,135 +107,85 @@ entity MaqPACMAN is
         enableMem    : out STD_LOGIC;
         done         : out STD_LOGIC;
         write        : out STD_LOGIC
-    );
-end MaqPACMAN;
-
-architecture Behavioral of MaqPACMAN is
-    type estados is (reposo, botonDireccion, movimiento, muroEnMov, muroNoMov, movDir, botonDireccion2, noMov);
-    signal estado, p_estado    : estados;
-    signal posx, p_posx        : std_logic_vector(3 downto 0);
-    signal posy, p_posy        : std_logic_vector(4 downto 0);
-    signal last_udlr, p_last_udlr : std_logic_vector(3 downto 0);
-    signal pacmanEnMov         : std_logic;  -- Signal indicating if PacMan is in motion
-    signal done_reg : std_logic  := '0'; -- Register done signal  
-
-begin
-
-    sync: process(clk, reset)
-    begin
-        -- Update the state and variables on each clock cycle
-        if reset = '1' then
-            estado <= reposo;
-            posx <= (others => '0');
-            posy <= (others => '0');
-            last_udlr <= (others => '0');
-            done <= '0';
-            write <= '0';
+        );
+        end component;
+      component gestion_botones  is 
+      Port ( up : in std_logic;
+            down : in std_logic;
+            left : in std_logic;
+            right : in std_logic;
+            move : out std_logic;
+            udlrcc : out std_logic_vector(3 downto 0)
+            );
+       end component;
        
-        elsif rising_edge(clk) then
-            estado <= p_estado;
-            posx <= p_posx;
-            posy <= p_posy;
-            last_udlr <= p_last_udlr;
+       
+  
+begin
+botones : gestion_botones 
+    port map(
+    up => up,
+    down => down,
+    left => left,
+    right => right,
+    move => move,
+    udlrcc => udlr
+    );
+    
+comecocos :  MaqPACMAN
+    port map
+    (
+        clk => clk,         
+        reset  => reset,      
+        refresh  => refreshAux,    
+        move => move  ,      
+        udlrIn  => udlr,     
+        addressAIn  =>open ,
+        addressAOut  =>addraIn,
+        dAIn     =>dataOut,    
+        dAOut       =>dataIn, 
+        enableMem    =>enableComecocos,
+        done         =>open,
+        write        => std_logic(writeComeCocos)
+        );
+    
 
-            if p_estado = movimiento then
-                pacmanEnMov <= '1';
-            else
-                pacmanEnMov <= '0';
-            end if; 
-
-            done <= done_reg ;
-            done_reg <= '0'; -- Desactivate 'done_reg' in each refresh
-            write <= '0';
-
-        end if;
-    end process;
-
-    comb: process(estado, refresh, move, udlrIn, dAIn)
-    begin
-        -- Default outputs
-        dAOut <= "000";
-        enableMem <= '1';
-        write <= '0';
-        p_estado <= estado;
-        pacmanEnMov <= '0';
-        done_reg <= '0';
-
-        case estado is
-            when reposo =>
-                if move = '1' and refresh = '1' then
-                    p_posx <= "0001";  -- Initial X position
-                    p_posy <= "00001"; -- Initial Y position
-                    dAOut <= "011";    -- Draw Pac-Man
-                    write <= '1';
-                    p_estado <= botonDireccion;
-                end if;
-
-            when botonDireccion =>
-                if refresh = '1' then
-                    if udlrIn = "1000" then  -- UP direction
-                        addressAOut <= std_logic_vector(unsigned(p_posy) - 1) & posx;
-                        p_estado <= movimiento;
-                    elsif udlrIn = "0100" then  -- DOWN direction
-                        addressAOut <= std_logic_vector(unsigned(p_posy) + 1) & posx;
-                        p_estado <= movimiento;
-                    elsif udlrIn = "0010" then  -- LEFT direction
-                        addressAOut <= p_posy & std_logic_vector(unsigned(posx) - 1);
-                        p_estado <= movimiento;
-                    elsif udlrIn = "0001" then  -- RIGHT direction
-                        addressAOut <= p_posy & std_logic_vector(unsigned(posx) + 1);
-                        p_estado <= movimiento;
-                    else
-                        p_estado <= reposo;
-                    end if;
-                end if;
-
-            when movimiento =>
-                if pacmanEnMov = '1' then
-                    p_estado <= muroEnMov;
-                    done_reg <= '1';    -- Correct movement
-                    dAOut <= "011";     -- As it's a correct movement draw PacMan
-                    write <= '1';       -- Activate write to draw 
-                else
-                    p_estado <= muroNoMov;
-                end if;
-
-            when muroEnMov =>
-                if  (udlrIn = "1000" and dAIn = "001") or 
-                    (udlrIn = "0100" and dAIn = "001") or 
-                    (udlrIn = "0010" and dAIn = "001") or 
-                    (udlrIn = "0001" and dAIn = "001") then  -- Wall detected
-                    p_estado <= botonDireccion;              -- Maintain direction
-                else
-                    p_estado <= botonDireccion2;             -- Move in button direction
-                end if;
-
-            when botonDireccion2 =>
-                if move = '1' and refresh = '1' then  
-                    p_estado <= muroEnMov;
-                else
-                    p_estado <= noMov;
-                end if;
-
-            when muroNoMov =>
-                if  (udlrIn = "1000" and dAIn /= "001") or 
-                    (udlrIn = "0100" and dAIn /= "001") or 
-                    (udlrIn = "0010" and dAIn /= "001") or 
-                    (udlrIn = "0001" and dAIn /= "001") then  -- No wall, proceed
-                    p_estado <= botonDireccion2;
-                else
-                    p_estado <= botonDireccion;
-                end if;
-
-            when noMov =>
-                -- Stop movement and reset to initial direction
-                write <= '0';
-                p_estado <= reposo;
-
-            when others =>
-                p_estado <= reposo;
-
-        end case;
-    end process;
-
+memoria :  blk_mem_gen_0 
+    port map(
+        ena =>'1',
+        wea =>writeComeCocos,
+        web=>"0",
+        addra =>addraIn,
+        dina=>dataIn,
+        douta=>dataOut,
+        enb=>'1',
+        clka => clk,
+        clkb =>clk,
+        addrb =>addrbIn,
+        dinb => (others =>'0'),
+        doutb =>datbOut  
+    );
+pintor : dibuja
+  port map(
+           eje_x => ejx,
+           eje_y =>ejy,
+           
+           codigo_color => datbOut,
+           direccion => addrbIn,
+           
+          RGB => RGBaux
+    );
+ driver: VGA_DRIVER
+   port map(
+     clk => clk, 
+     reset=> reset, 
+     RGBin=> RGBaux,
+     VS =>VS, 
+     HS =>HS,  
+     eje_x =>ejx,
+     eje_y =>ejy, 
+     RGB =>RGBOutaux,
+     refresh => refreshAux
+    );
+ RGB<=RGBOutaux;
 end Behavioral;
