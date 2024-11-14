@@ -17,22 +17,21 @@
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity LFSR_Random_Generator is
-    Port ( clk       : in std_logic;           -- Reloj de entrada
-           reset     : in std_logic;           -- Reset
-           random_number_out : out std_logic_vector(4 downto 0)  -- Salida de 4 bits
+    Port ( clk               : in std_logic;               -- Reloj de entrada
+           reset             : in std_logic;               -- Reset
+           random_number_out : out std_logic_vector(4 downto 0)  -- Salida de 5 bits
            );
 end LFSR_Random_Generator;
 
 architecture Behavioral of LFSR_Random_Generator is
 
-    signal lfsr : std_logic_vector(4 downto 0) := "10001"; -- Semilla inicial
+    signal lfsr : std_logic_vector(4 downto 0) := "10101"; -- Semilla inicial
 
 begin
 
@@ -41,11 +40,13 @@ begin
     begin
         if reset = '1' then
             -- Si se activa el reset, se carga la semilla inicial
-            lfsr <= "10001"; -- Semilla inicial
+            lfsr <= "10101"; -- Semilla inicial (nunca todo cero)
         elsif rising_edge(clk) then
             -- Cálculo del feedback: XOR de los bits especificados (taps)
-            lfsr <= (lfsr(4) xor lfsr(2)) & lfsr(4 downto 1); -- Taps 3,2
-            -- Desplazamiento y retroalimentación: el bit de feedback se coloca en el bit más significativo
+            -- Tap en las posiciones 4 y 1
+            lfsr(4) <= lfsr(4) xor lfsr(1);  -- Feedback calculado por XOR
+            -- Desplazamos el registro, exceptuando el bit de feedback
+            lfsr(3 downto 0) <= lfsr(4 downto 1);  -- Desplazamos el resto de los bits
         end if;
     end process;
 
