@@ -28,6 +28,7 @@ architecture Behavioral of MaqPACMAN is
     signal posy, p_posy        : std_logic_vector(4 downto 0);
     signal last_udlr, p_last_udlr : std_logic_vector(3 downto 0);
     signal pacmanEnMov         : std_logic;  -- Signal indicating if PacMan is in motion
+    signal done_reg : std_logic  := '0'; -- Register done signal  
 
 begin
 
@@ -39,11 +40,25 @@ begin
             posx <= (others => '0');
             posy <= (others => '0');
             last_udlr <= (others => '0');
+            done <= '0';
+            write <= '0';
+       
         elsif rising_edge(clk) then
             estado <= p_estado;
             posx <= p_posx;
             posy <= p_posy;
             last_udlr <= p_last_udlr;
+
+            if p_estado = movimiento then
+                pacmanEnMov <= '1';
+            else
+                pacmanEnMov <= '0';
+            end if; 
+
+            done <= done_reg ;
+            done_reg <= '0'; -- Desactivate 'done_reg' in each refresh
+            write <= '0';
+
         end if;
     end process;
 
@@ -54,6 +69,8 @@ begin
         enableMem <= '1';
         write <= '0';
         p_estado <= estado;
+        pacmanEnMov <= '0';
+        done_reg <= '0';
 
         case estado is
             when reposo =>
@@ -85,15 +102,21 @@ begin
             when movimiento =>
                 if pacmanEnMov = '1' then
                     p_estado <= muroEnMov;
+                    done_reg <= '1';    -- Correct movement
+                    dAOut <= "011";     -- As it's a correct movement draw PacMan
+                    write <= '1';       -- Activate write to draw 
                 else
                     p_estado <= muroNoMov;
                 end if;
 
             when muroEnMov =>
-                if (dAIn = "001") then  -- Wall detected
-                    p_estado <= botonDireccion;   -- Maintain direction
+                if  (udlrIn = "1000" and dAIn = "001") or 
+                    (udlrIn = "0100" and dAIn = "001") or 
+                    (udlrIn = "0010" and dAIn = "001") or 
+                    (udlrIn = "0001" and dAIn = "001") then  -- Wall detected
+                    p_estado <= botonDireccion;              -- Maintain direction
                 else
-                    p_estado <= botonDireccion2;  -- Move in button direction
+                    p_estado <= botonDireccion2;             -- Move in button direction
                 end if;
 
             when botonDireccion2 =>
@@ -104,7 +127,10 @@ begin
                 end if;
 
             when muroNoMov =>
-                if dAIn /= "001" then  -- No wall, proceed
+                if  (udlrIn = "1000" and dAIn /= "001") or 
+                    (udlrIn = "0100" and dAIn /= "001") or 
+                    (udlrIn = "0010" and dAIn /= "001") or 
+                    (udlrIn = "0001" and dAIn /= "001") then  -- No wall, proceed
                     p_estado <= botonDireccion2;
                 else
                     p_estado <= botonDireccion;
