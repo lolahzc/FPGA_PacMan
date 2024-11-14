@@ -35,6 +35,7 @@ entity Top is
 Port ( 
     clk : in STD_LOGIC; 
     reset : in STD_LOGIC; 
+    up,down,left,right : in STD_LOGIC;
     RGB:out std_logic_vector(11 downto 0);
     HS: out std_logic;
     VS: out std_logic
@@ -43,11 +44,12 @@ end Top;
 
 architecture Behavioral of Top is
 
-    signal refreshAux: STD_LOGIC;
+    signal refreshAux,move,enableComecocos: STD_LOGIC;
+    signal writeComeCocos : STD_LOGIC_VECTOR(0 DOWNTO 0);
     signal addraIn,addrbIn: STD_LOGIC_VECTOR(8 DOWNTO 0);
     signal dataIn,datbIn:STD_LOGIC_VECTOR(2 DOWNTO 0);
-    signal datbOut:STD_LOGIC_VECTOR(2 DOWNTO 0);
-    signal ejx,ejy:STD_LOGIC_VECTOR(9 DOWNTO 0);
+    signal dataOut,datbOut:STD_LOGIC_VECTOR(2 DOWNTO 0);
+    signal ejx,ejy,udlr :STD_LOGIC_VECTOR(9 DOWNTO 0);
     signal RGBaux,RGBOutaux :STD_LOGIC_VECTOR(11 DOWNTO 0);
 
    component blk_mem_gen_0 is
@@ -90,17 +92,72 @@ end component;
      eje_y : out STD_LOGIC_VECTOR (9 downto 0); 
      RGB : out STD_LOGIC_VECTOR (11 downto 0));
     end  component;
-
+    
+    component MaqPACMAN is
+        Port(
+        clk          : in STD_LOGIC;
+        reset        : in STD_LOGIC;
+        refresh      : in STD_LOGIC;
+        move         : in STD_LOGIC;
+        udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
+        addressAIn   : in STD_LOGIC_VECTOR(8 DOWNTO 0);
+        addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+        dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+        enableMem    : out STD_LOGIC;
+        done         : out STD_LOGIC;
+        write        : out STD_LOGIC
+        );
+        end component;
+      component BotonesCC  is 
+      Port ( up : in std_logic;
+            down : in std_logic;
+            left : in std_logic;
+            right : in std_logic;
+            move : out std_logic;
+            udlrcc : out std_logic_vector(3 downto 0)
+            );
+       end component;
+       
+       
+  
 begin
-
+botones : BotonesCC 
+    port map(
+    up => up,
+    down => down,
+    left => left,
+    right => right,
+    move => move,
+    udlrcc => udlr
+    );
+    
+comecocos :  MaqPACMAN
+    port map
+    (
+        clk => clk,         
+        reset  => reset,      
+        refresh  => refreshAux,    
+        move => move  ,      
+        udlrIn  => udlr,     
+        addressAIn  =>open ,
+        addressAOut  =>addraIn,
+        dAIn     =>dataOut,    
+        dAOut       =>dataIn, 
+        enableMem    =>enableComecocos,
+        done         =>open,
+        write        => std_logic(writeComeCocos)
+        );
+    
 
 memoria :  blk_mem_gen_0 
     port map(
         ena =>'1',
-        wea =>"0",
+        wea =>writeComeCocos,
         web=>"0",
         addra =>addraIn,
         dina=>dataIn,
+        douta=>dataOut,
         enb=>'1',
         clka => clk,
         clkb =>clk,
@@ -130,8 +187,5 @@ pintor : dibuja
      RGB =>RGBOutaux,
      refresh => refreshAux
     );
-        addraIn <= (others =>'0');
-        dataIn <= (others =>'0');
  RGB<=RGBOutaux;
 end Behavioral;
-
