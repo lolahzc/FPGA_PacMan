@@ -17,7 +17,7 @@ entity MaqPACMAN is
         dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
         enableMem    : out STD_LOGIC;
         done         : out STD_LOGIC;
-        write        : out STD_LOGIC
+        write        : out STD_LOGIC_VECTOR(0 downto 0)
     );
 end MaqPACMAN;
 
@@ -41,7 +41,7 @@ begin
             posy <= (others => '0');
             last_udlr <= (others => '0');
             done <= '0';
-            write <= '0';
+            write <= "0";
        
         elsif rising_edge(clk) then
             estado <= p_estado;
@@ -57,7 +57,7 @@ begin
 
             done <= done_reg ;
             done_reg <= '0'; -- Desactivate 'done_reg' in each refresh
-            write <= '0';
+            write <= "0";
 
         end if;
     end process;
@@ -67,7 +67,7 @@ begin
         -- Default outputs
         dAOut <= "000";
         enableMem <= '1';
-        write <= '0';
+        write <= "0";
         p_estado <= estado;
         pacmanEnMov <= '0';
         done_reg <= '0';
@@ -78,7 +78,7 @@ begin
                     p_posx <= "0001";  -- Initial X position
                     p_posy <= "00001"; -- Initial Y position
                     dAOut <= "011";    -- Draw Pac-Man
-                    write <= '1';
+                    write <= "1";
                     p_estado <= botonDireccion;
                 end if;
 
@@ -108,10 +108,10 @@ begin
                     
                     addressAOut <= p_posx & p_posy ;
                     dAOut <= "000";
-                    write <= '1';
+                    write <= "1";
                     addressAOut <= posx & posy; 
                     dAOut <= "011";     -- As it's a correct movement draw PacMan
-                    write <= '1';       -- Activate write to draw 
+                    write <= "1";       -- Activate write to draw 
                 else
                     p_estado <= muroNoMov;
                 end if;
@@ -145,7 +145,7 @@ begin
 
             when noMov =>
                 -- Stop movement and reset to initial direction
-                write <= '0';
+                write <= "0";
                 p_estado <= reposo;
 
             when others =>
