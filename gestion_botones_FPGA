@@ -49,7 +49,7 @@ architecture Behavioral of gestion_botones is
 begin
 
     -- Concatenación de señales
-    udlr_in <= up & down & right & left;
+    udlr_in <= up & down & left & right;
 
     process (udlr_in)  -- Sensibilidad a las señales relevantes
     
@@ -62,12 +62,13 @@ begin
             when "0100" => -- down
                 udlrcc <= "0100";
                 move <='1';
-            when "0010" => -- right
+            when "0010" => -- left
                 udlrcc <= "0010";
                 move <='1';
-            when "0001" => -- left
-                udlrcc <= "0100";
+            when "0001" => -- right
+                udlrcc <= "0001";
                 move <='1';
+
             when others => -- none (or more than one at the same time)
                 udlrcc <= "0000";
         end case;
