@@ -36,49 +36,49 @@ architecture Behavioral of MaqPACMAN is
 
 begin
 
-   sync: process(clk, reset)
-begin
-    if reset = '1' then
-        estado <= reposo;
-        posx <= (others => '0');
-        posy <= (others => '0');
-        done <= '0';
-        posy_ant <= (others => '0');
-        posx_ant <= (others => '0');
-        ciclos <= "00000";
-        pacmanEnMov <= '0';
-        addressAOut <= (others => '0');
-        dAOut <= (others => '0');
-        hayMuro <= '0';
-
-    elsif rising_edge(clk) then
-        addressAOut <= p_address;
-        dAOut <= p_Dout;
-        estado <= p_estado;
-        posx <= p_posx;
-        posy <= p_posy;
-        posx_ant <= p_posx_ant;
-        posy_ant <= p_posy_ant;
-        hayMuro <= p_hayMuro;
-        write <= p_write;
-        ciclos <= p_ciclo;
-
-    
-
-        if p_estado = movimiento then
-            pacmanEnMov <= '1';
-        else
+    sync: process(clk, reset)
+    begin
+        if reset = '1' then
+            estado <= reposo;
+            posx <= (others => '0');
+            posy <= (others => '0');
+            done <= '0';
+            posy_ant <= (others => '0');
+            posx_ant <= (others => '0');
+            ciclos <= "00000";
             pacmanEnMov <= '0';
-        end if;
+            addressAOut <= (others => '0');
+            dAOut <= (others => '0');
+            hayMuro <= '0';
 
-        done <= done_reg;
-    end if;
-end process;
+        elsif rising_edge(clk) then
+            addressAOut <= p_address;
+            dAOut <= p_Dout;
+            estado <= p_estado;
+            posx <= p_posx;
+            posy <= p_posy;
+            posx_ant <= p_posx_ant;
+            posy_ant <= p_posy_ant;
+            hayMuro <= p_hayMuro;
+            write <= p_write;
+            ciclos <= p_ciclo;
+
+
+
+            if p_estado = movimiento then
+                pacmanEnMov <= '1';
+            else
+                pacmanEnMov <= '0';
+            end if;
+
+            done <= done_reg;
+        end if;
+    end process;
 
     comb: process(estado, refresh, move,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, p_posy, posx,posx_ant,posy_ant, posy,ciclos, pacmanEnMov)
     begin
         -- Default outputs
-        udlr <= udlrIn;
+
         p_ciclo <= "00000";
         p_Dout <= "000";
         p_write <= "0";
@@ -102,43 +102,43 @@ end process;
                     p_estado <= botonDireccion;
                 end if;
 
-           when botonDireccion =>
-            p_posx_ant <= posx;
-            p_posy_ant <= posy;
-            p_write <= "1";
-            p_Dout <= "000";
-            p_address <= posx_ant & posy_ant;
-          
-            
-            -- Comparación entre last_udlr y udlr
-            if (hayMuro = '1') then
-               udlr <= p_last_udlr; -- Reutiliza la dirección anterior si hay muro
-            end if;
+            when botonDireccion =>
+                udlr <= udlrIn;
+                p_posx_ant <= posx;
+                p_posy_ant <= posy;
+                p_write <= "1";
+                p_Dout <= "000";
+                p_address <= posx_ant & posy_ant;
 
-            if udlr = "1000" then
-                p_posx <= std_logic_vector(unsigned(posx) - 1);
-                p_posy <= posy;
-                p_estado <= movimiento;
-            elsif udlr = "0100" then
-                p_posx <= std_logic_vector(unsigned(posx) + 1);
-                p_posy <= posy;
-                p_estado <= movimiento;
-            elsif udlr = "0010" then
-                p_posx <= posx;
-                p_posy <= std_logic_vector(unsigned(posy) - 1);
-                p_estado <= movimiento;
-            elsif udlr = "0001" then
-                p_posx <= posx;
-                p_posy <= std_logic_vector(unsigned(posy) + 1);
-                p_estado <= movimiento;
-            else
-            
-                p_estado <= estado;
-            end if;
-            last_udlr <= udlr;
+
+                -- Comparación entre last_udlr y udlr
+                if (hayMuro = '1') then
+                    udlr <= p_last_udlr; -- Reutiliza la dirección anterior si hay muro
+                end if;
+
+                if udlr = "1000" then
+                    p_posx <= std_logic_vector(unsigned(posx) - 1);
+                    p_posy <= posy;
+                    p_estado <= movimiento;
+                elsif udlr = "0100" then
+                    p_posx <= std_logic_vector(unsigned(posx) + 1);
+                    p_posy <= posy;
+                    p_estado <= movimiento;
+                elsif udlr = "0010" then
+                    p_posx <= posx;
+                    p_posy <= std_logic_vector(unsigned(posy) - 1);
+                    p_estado <= movimiento;
+                elsif udlr = "0001" then
+                    p_posx <= posx;
+                    p_posy <= std_logic_vector(unsigned(posy) + 1);
+                    p_estado <= movimiento;
+                else
+
+                    p_estado <= estado;
+                end if;
             when movimiento =>
                 if pacmanEnMov = '1' then   --Aquí lo que hago es que pongo un cero
-                    p_address <= posx_ant & posy_ant; 
+                    p_address <= posx_ant & posy_ant;
                     p_Dout <= "000";
                     p_write <= "1";
                     done_reg <= '1';
@@ -151,29 +151,38 @@ end process;
                 p_write <= "0";
                 p_address <= p_posx & p_posy;
                 p_ciclo <= ciclos +1;
-                
+
                 if(ciclos = 5) then
-                p_estado <= confirmoDireccion;
-                else 
-                p_estado <= comprueboDireccion;
+                    p_estado <= confirmoDireccion;
+                else
+                    p_estado <= comprueboDireccion;
                 end if;
-             
+
             when confirmoDireccion => --Aquí verifico si hay muro o no --ASIGNO LA SIGUIENTE SALIDA
                 p_write <= "1";
-                if(dAIn = "001") then --Si hay muro. 
-                --Primero he puesto un cero, si hay un muro se escribe arriba y vuelve a movimiento
-                    p_hayMuro<='1';
-                     p_posx <= posx_ant; 
-                     p_posy <= posy_ant;
-                      p_estado <= pintaPacman;
-                    --Esto pinta el pacman en la posición anterior
-                elsif (p_last_udlr = last_udlr) then
-                      p_hayMuro<='0';
-                      else
-                       p_last_udlr <= udlr;
-                end if;
                 p_estado <= pintaPacman;
                 p_address <= p_posx & p_posy;
+                if(dAIn = "001") then --Si hay muro. 
+                    --Primero he puesto un cero, si hay un muro se escribe arriba y vuelve a movimiento
+                    if(last_udlr /= udlr) then --Veo si  puedo ir en la dirección anterior
+                        p_posx <= posx_ant; 
+                        p_posy <= posy_ant;
+                        p_last_udlr <= last_udlr;
+                        p_hayMuro<='1';
+                        p_estado <= botonDireccion;
+                    else
+                   
+                      p_posx <= posx_ant; 
+                      p_posy <= posy_ant;
+                      p_estado <= pintaPacman;
+                    end if;
+                --Esto pinta el pacman en la posición anterior
+                else
+                      p_hayMuro<='0';
+
+                    p_last_udlr <= udlr;
+                end if;
+ 
         
            when pintaPacman => --Aquí pinto en la casilla siguiente o en la anterior en función de confirmo dirección
                 p_address <= p_posx & p_posy;
