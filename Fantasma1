@@ -113,6 +113,7 @@ begin
             p_estado <= espera;
             end if;
             when botonDireccion =>
+            p_enableMemoria <= '1';
                 p_udlr <= udlrIn;
                 p_posx_ant <= posx;
                 p_posy_ant <= posy;
@@ -178,7 +179,7 @@ begin
                         p_hayMuro<='1';
                         p_estado <= botonDireccion;
                     else
-
+                         p_hayMuro<='0';
                         p_posx <= posx_ant;
                         p_posy <= posy_ant;
                         p_estado <= pintaPacman;
