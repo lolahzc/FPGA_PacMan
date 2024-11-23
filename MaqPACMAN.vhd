@@ -25,8 +25,8 @@ architecture Behavioral of MaqPACMAN is
     type estados is (reposo, botonDireccion, movimiento, comprueboDireccion, confirmoDireccion, muroEnMov, muroNoMov, movDir, botonDireccion2, noMov, pintaPacman);
     signal estado, p_estado       : estados;
     signal p_address, last_address : std_logic_vector(8 downto 0);
-    signal posx, p_posx, posx_ant, p_posx_ant : std_logic_vector(3 downto 0);
-    signal posy, p_posy, posy_ant, p_posy_ant : std_logic_vector(4 downto 0);
+    signal posx, p_posx, posx_ant, p_posx_ant : std_logic_vector(3 downto 0) :=("0001");
+    signal posy, p_posy, posy_ant, p_posy_ant : std_logic_vector(4 downto 0):=("00001");
     signal p_Dout                 : std_logic_vector(2 downto 0);
     signal last_udlr, p_last_udlr,udlr,p_udlr : std_logic_vector(3 downto 0);
     signal pacmanEnMov,hayMuro ,p_hayMuro           : std_logic; -- Signal indicating if PacMan is in motion
@@ -40,15 +40,15 @@ begin
     begin
         if reset = '1' then
             estado <= reposo;
-            posx <= "0001";
-            posy <= "00001";
+            posx <= (others => '0');
+            posy <= (others => '0');
             done <= '0';
             posy_ant <= (others => '0');
             posx_ant <= (others => '0');
             ciclos <= "00000";
             pacmanEnMov <= '0';
             addressAOut <=(others => '0');
-            dAOut <= (others => '0');
+            dAOut <= "000";
             hayMuro <= '0';
             write <="0";
             udlr <= (others => '0');
