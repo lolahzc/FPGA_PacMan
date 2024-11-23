@@ -32,216 +32,231 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity mov_fantasma is
-  Port (random_number_in : in std_logic_vector (3 downto 0);
+  Port (
+  clk : in std_logic;
+  random_number_in : in std_logic_vector (4 downto 0);
   udlr_ghost : out std_logic_vector(3 downto 0)
    );
 end mov_fantasma;
 
 architecture Behavioral of mov_fantasma is
-
+signal udlr:std_logic_vector(3 downto 0);
+signal p_udlr_ghost:std_logic_vector(3 downto 0);
 begin
+udlr_ghost<=udlr;
+sync : process(clk)
+begin
+    if(rising_edge(clk)) then
+    udlr <= p_udlr_ghost;
+    end if;
+end process;
 
-process (random_number_in)  -- Sensibilidad a las señales relevantes
+
+comb:process (random_number_in,udlr)  -- Sensibilidad a las señales relevantes
     begin
-    
+    p_udlr_ghost <= udlr;
     if(random_number_in(0)='0') then
     
         case random_number_in is
             when "00000" => -- no movement
-                udlr_ghost <= "0000";
+                p_udlr_ghost <= "0000";
                 
             when "00001" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "00010" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "00011" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "00100" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "00101" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "00110" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "00111" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "01000" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "01001" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "01010" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "01011" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "01100" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "01101" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "01110" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "01111" => -- rigt
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "10000" => -- no movement
-                udlr_ghost <= "0000";
+                p_udlr_ghost <= "0000";
                 
             when "10001" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "10010" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "10011" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "10100" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "10101" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "10110" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "10111" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "11000" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "11001" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "11010" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "11011" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "11100" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "11101" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "11110" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "11111" => -- rigt
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
+             when others =>
+             p_udlr_ghost <= udlr;
         end case;
         
         else
         
         case random_number_in is
             when "00000" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "00001" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "00010" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "00011" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "00100" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "00101" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "00110" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "00111" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "01000" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "01001" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "01010" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "01011" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "01100" => -- no movement
-                udlr_ghost <= "0000";
+                p_udlr_ghost <= "0000";
                 
             when "01101" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "01110" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "01111" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "10000" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "10001" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "10010" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "10011" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "10100" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "10101" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "10110" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "10111" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "11000" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "11001" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "11010" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
                 
             when "11011" => -- down
-                udlr_ghost <= "0100";
+                p_udlr_ghost <= "0100";
                 
             when "11100" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "11101" => -- right
-                udlr_ghost <= "0010";
+                p_udlr_ghost <= "0010";
                 
             when "11110" => -- left
-                udlr_ghost <= "0001";
+                p_udlr_ghost <= "0001";
                 
             when "11111" => -- up
-                udlr_ghost <= "1000";
+                p_udlr_ghost <= "1000";
+                  when others =>
+             p_udlr_ghost <= udlr;
         end case;
 
         end if;
