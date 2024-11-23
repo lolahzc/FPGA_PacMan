@@ -82,18 +82,18 @@ begin
     comb: process(estado, refresh, move,p_last_udlr,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, p_posy, posx,posx_ant,posy_ant, posy,ciclos, pacmanEnMov)
     begin
         -- Default outputs
-        p_last_udlr <= last_udlr;
-        p_udlr <= udlr;
-        p_ciclo <= "00000";
-        p_Dout <= "000";
-        p_write <= "0";
-        p_estado <= estado;
-        p_address <= p_posx & p_posy;
-        p_posx <= posx;
+        p_last_udlr <= last_udlr; --Mantiene el valor del anterior
+        p_udlr <= udlr; --Mantiene el valor del anterior
+        p_ciclo <= "00000"; --Resetea el ciclo
+        p_Dout <= "000"; --Pone vacío por defecto
+        p_write <= "0"; --Por defecto no escribe
+        p_estado <= estado; --Se manteine en el mismo estado
+        p_address <= p_posx & p_posy; --Actualiza la posición
+        p_posx <= posx; --Por defecto la pos anterior
         p_posy <= posy;
-        p_posx_ant <= posx_ant;
+        p_posx_ant <= posx_ant; --Por defecto la pos anterior
         p_posy_ant <= posy_ant;
-        enableMem <= '1';
+        enableMem <= '1'; --Por defecto siempre está activo
         done_reg <= '0';
         p_hayMuro <= hayMuro;
         case estado is
@@ -125,22 +125,18 @@ begin
             if(ciclos >2) then
                 if udlr = "1000" then
                     p_posx <= std_logic_vector(unsigned(posx) - 1);
-                    p_posy <= posy;
                     p_estado <= movimiento;
                 elsif udlr = "0100" then
                     p_posx <= std_logic_vector(unsigned(posx) + 1);
-                    p_posy <= posy;
                     p_estado <= movimiento;
                 elsif udlr = "0010" then
-                    p_posx <= posx;
                     p_posy <= std_logic_vector(unsigned(posy) - 1);
                     p_estado <= movimiento;
                 elsif udlr = "0001" then
-                    p_posx <= posx;
                     p_posy <= std_logic_vector(unsigned(posy) + 1);
                     p_estado <= movimiento;
                 else
-
+                    p_hayMuro <= '1'; -- Si no sabe qué hacer que coja el anterior
                     p_estado <= estado;
                 end if;
                 else p_estado <=estado;
@@ -155,7 +151,7 @@ begin
                 elsif refresh = '1' then
                     p_estado <= muroNoMov;
                 end if;
-            --AQUÍ DEBERÍA HABER OTRO ESTADO QUE PONGA LA SALIDA PARA QUE PUEDA FUNCIONAR.
+           
             when comprueboDireccion =>
                 p_write <= "0";
                 p_address <= p_posx & p_posy;
@@ -202,7 +198,6 @@ begin
                 if refresh = '1' then
                     p_ciclo <= ciclos +1;
                     if ciclos >20 then
-                        --p_Dout <= "000";
                         p_write <= "0";
                         p_udlr <= udlrIn;
                         p_estado <= botonDireccion;
@@ -213,38 +208,6 @@ begin
                 else
                     p_estado <= estado;
                 end if;
-
-            when muroEnMov =>
-                if (udlrIn = "1000" and dAIn = "001") or
- (udlrIn = "0100" and dAIn = "001") or
- (udlrIn = "0010" and dAIn = "001") or
- (udlrIn = "0001" and dAIn = "001") then
-                    p_estado <= muroEnMov;
-                else
-                    p_estado <= botonDireccion2;
-                end if;
-
-            when botonDireccion2 =>
-                p_write <= "0";
-                if move = '1' then
-                    p_estado <= botonDireccion;
-                else
-                    p_estado <= botonDireccion;
-                end if;
-
-            when muroNoMov =>
-                if (udlrIn = "1000" and dAIn /= "001") or
- (udlrIn = "0100" and dAIn /= "001") or
- (udlrIn = "0010" and dAIn /= "001") or
- (udlrIn = "0001" and dAIn /= "001") then
-                    p_estado <= botonDireccion2;
-                else
-                    p_estado <= botonDireccion;
-                end if;
-
-            when noMov =>
-                p_write <= "0";
-                p_estado <= botonDireccion2;
 
             when others =>
                 p_estado <= estado;
