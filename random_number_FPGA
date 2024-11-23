@@ -24,32 +24,63 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity LFSR_Random_Generator is
     Port ( clk               : in std_logic;               -- Reloj de entrada
-           reset             : in std_logic;               -- Reset
-           random_number_out : out std_logic_vector(4 downto 0)  -- Salida de 5 bits
-           );
+         refresh             : in std_logic;               -- refresh
+         random_number_out : out std_logic_vector(4 downto 0)  -- Salida de 5 bits
+        );
 end LFSR_Random_Generator;
 
 architecture Behavioral of LFSR_Random_Generator is
 
-    signal lfsr : std_logic_vector(4 downto 0) := "10101"; -- Semilla inicial
-
+    signal lfsr,p_lfsr : std_logic_vector(4 downto 0) := "10101"; -- Semilla inicial
+    signal cont,p_cont,Aux: std_logic_vector(10 downto 0):= "00000000000";
+    signal cont3,p_cont3: std_logic_vector(6 downto 0):= "0000000";
 begin
-
     -- Proceso que genera los números pseudoaleatorios en cada flanco de subida del reloj
-    process(clk, reset)
+    process(clk,cont)
     begin
-        if reset = '1' then
-            -- Si se activa el reset, se carga la semilla inicial
+
+        if cont = 500 then
+            -- Si se activa el refresh, se carga la semilla inicial
             lfsr <= "10101"; -- Semilla inicial (nunca todo cero)
+            cont <= "00000000000";
+            Aux <= Aux +1;
+            case Aux is
+                when "00000000001" => -- no movement
+                lfsr <= "10100";
+                when "00000000010" => -- no movement
+                lfsr <= "10010";
+               when "00000000011" => -- no movement
+                lfsr <= "00111";
+                when others => -- no movement
+                lfsr <= "10111";
+                Aux <= "00000000000";
+                end case;
         elsif rising_edge(clk) then
             -- Cálculo del feedback: XOR de los bits especificados (taps)
             -- Tap en las posiciones 4 y 1
-            lfsr(4) <= lfsr(4) xor lfsr(1);  -- Feedback calculado por XOR
-            -- Desplazamos el registro, exceptuando el bit de feedback
-            lfsr(3 downto 0) <= lfsr(4 downto 1);  -- Desplazamos el resto de los bits
+            lfsr <= p_lfsr;
+            cont <= p_cont;
+            cont3 <= p_cont3;
+
         end if;
     end process;
 
+    comb :process(lfsr,cont,refresh)
+    begin
+        p_cont<= cont;
+        p_cont3 <= cont3;
+        p_lfsr <= lfsr;
+        if(refresh = '1') then
+         if(cont3 = 80) then
+        p_lfsr(4) <= lfsr(4) xor lfsr(1);  -- Feedback calculado por XOR
+        -- Desplazamos el registro, exceptuando el bit de feedback
+        p_lfsr(3 downto 0) <= lfsr(4 downto 1);  -- Desplazamos el resto de los bits
+        end if;
+        p_cont3 <= cont3 + 1;
+        p_cont <= cont +1;
+        end if;
+        
+    end process;
     -- La salida del generador aleatorio es el valor del registro LFSR
     random_number_out <= lfsr;
 
