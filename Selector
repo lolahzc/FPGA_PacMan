@@ -1,0 +1,75 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 23.11.2024 15:22:33
+-- Design Name: 
+-- Module Name: Selector - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity Selector is
+    Port (  
+        clk: in STD_LOGIC;
+     addraInCC,addraInG1: in STD_LOGIC_VECTOR(8 DOWNTO 0);
+        dataCC,dataG1: in STD_LOGIC_VECTOR(2 DOWNTO 0);
+         writeCC,writeG1: in STD_LOGIC_VECTOR(0 DOWNTO 0);
+         PACMAN : in STD_LOGIC;
+         GHOST1 : in STD_LOGIC;
+         ADDRESS : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+         DATA  : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+         WRITE : OUT STD_LOGIC_VECTOR(0 DOWNTO 0));
+end selector;
+architecture Behavioral of Selector is
+signal p_address, direccion : STD_LOGIC_VECTOR(8 DOWNTO 0):= (others => '0');
+signal p_data,dato: std_logic_vector(2 downto 0):=(others => '0');
+signal p_write,escribe: std_logic_vector(0 downto 0):=(others => '0');
+begin
+seleccion:process(clk,addraInCC,addraInG1,writeG1,writeCC,dataCC,dataG1,PACMAN,GHOST1)
+begin
+    if PACMAN = '1' then
+        p_address <= addraInCC;
+        p_data    <= dataCC;
+        p_write   <= writeCC;
+    elsif GHOST1 = '1' then
+        p_address <= addraInG1;    
+        p_data    <= dataG1;
+        p_write   <= writeG1;
+    else
+        p_address <= direccion; -- Asigna un valor predeterminado
+        p_data    <= dato;
+        p_write   <= escribe;
+    end if;
+end process;
+
+    direccion <= p_address;
+    dato <= p_data;
+    escribe<= p_write;
+
+    DATA <= dato;
+ ADDRESS <= direccion;
+ WRITE <= escribe;
+end Behavioral;
