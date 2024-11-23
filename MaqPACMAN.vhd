@@ -1,5 +1,3 @@
--- Máquina de Estados PacMan
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -10,6 +8,7 @@ entity MaqPACMAN is
         reset        : in STD_LOGIC;
         refresh      : in STD_LOGIC;
         move         : in STD_LOGIC;
+        empieza      : in STD_LOGIC;
         udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
         addressAIn   : in STD_LOGIC_VECTOR(8 DOWNTO 0);
         addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
@@ -22,7 +21,7 @@ entity MaqPACMAN is
 end MaqPACMAN;
 
 architecture Behavioral of MaqPACMAN is
-    type estados is (reposo, botonDireccion, movimiento, comprueboDireccion, confirmoDireccion, muroEnMov, muroNoMov, movDir, botonDireccion2, noMov, pintaPacman);
+    type estados is (reposo, espera,botonDireccion, movimiento, comprueboDireccion, confirmoDireccion,pintaPacman);
     signal estado, p_estado       : estados;
     signal p_address, last_address : std_logic_vector(8 downto 0);
     signal posx, p_posx, posx_ant, p_posx_ant : std_logic_vector(3 downto 0) :=("0001");
@@ -31,9 +30,9 @@ architecture Behavioral of MaqPACMAN is
     signal last_udlr, p_last_udlr,udlr,p_udlr : std_logic_vector(3 downto 0);
     signal pacmanEnMov,hayMuro ,p_hayMuro           : std_logic; -- Signal indicating if PacMan is in motion
     signal p_write                : std_logic_vector(0 downto 0);
-    signal done_reg               : std_logic := '0'; -- Register done signal
+    signal done_reg             : std_logic := '0'; -- Register done signal
     signal p_ciclo,ciclos : unsigned (4 downto 0);
-
+    signal enableMemoria,p_enableMemoria: std_logic :='1';
 begin
 
     sync: process(clk, reset)
@@ -53,7 +52,9 @@ begin
             write <="0";
             udlr <= (others => '0');
             last_udlr <= "0001";
+            enableMemoria<='1';
         elsif rising_edge(clk) then
+        enableMemoria<=p_enableMemoria;
             addressAOut <= p_address;
             dAOut <= p_Dout;
             estado <= p_estado;
@@ -66,22 +67,15 @@ begin
             ciclos <= p_ciclo;
             udlr <= p_udlr;
             last_udlr <= p_last_udlr;
-
-
-
-            if p_estado = movimiento then
-                pacmanEnMov <= '1';
-            else
-                pacmanEnMov <= '0';
-            end if;
-
             done <= done_reg;
         end if;
     end process;
 
-    comb: process(estado, refresh, move,p_last_udlr,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, p_posy, posx,posx_ant,posy_ant, posy,ciclos, pacmanEnMov)
+    comb: process(estado, refresh,empieza, move,p_last_udlr,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, done_reg, p_posy, posx,posx_ant,posy_ant, posy,ciclos, pacmanEnMov)
     begin
         -- Default outputs
+
+        p_enableMemoria<=enableMemoria;
         p_last_udlr <= last_udlr; --Mantiene el valor del anterior
         p_udlr <= udlr; --Mantiene el valor del anterior
         p_ciclo <= "00000"; --Resetea el ciclo
@@ -93,7 +87,7 @@ begin
         p_posy <= posy;
         p_posx_ant <= posx_ant; --Por defecto la pos anterior
         p_posy_ant <= posy_ant;
-        enableMem <= '1'; --Por defecto siempre está activo
+
         done_reg <= '0';
         p_hayMuro <= hayMuro;
         case estado is
@@ -105,10 +99,17 @@ begin
                     p_address <= p_posx & p_posy;
                     p_write <= "1";
                     p_udlr <= udlrIn;
-                    p_estado <= botonDireccion;
+                    p_estado <= espera;
                 end if;
-
+            when espera =>
+             p_enableMemoria <= '0';
+            if(empieza ='1') then
+            p_estado <= botonDireccion;
+            else
+            p_estado <= espera;
+            end if;
             when botonDireccion =>
+            p_enableMemoria <= '1';
                 p_udlr <= udlrIn;
                 p_posx_ant <= posx;
                 p_posy_ant <= posy;
@@ -121,6 +122,7 @@ begin
                 if (hayMuro = '1') then
                     p_udlr <= last_udlr; -- Reutiliza la dirección anterior si hay muro
                       p_estado <= estado;
+                      p_hayMuro <= '1';
                 end if;
             if(ciclos >2) then
                 if udlr = "1000" then
@@ -142,15 +144,13 @@ begin
                 else p_estado <=estado;
                 end if;
             when movimiento =>
-                if pacmanEnMov = '1' then   --Aquí lo que hago es que pongo un cero
+            
                     p_address <= posx_ant & posy_ant;
                     p_Dout <= "000";
                     p_write <= "1";
-                    done_reg <= '1';
                     p_estado <= comprueboDireccion;
-                elsif refresh = '1' then
-                    p_estado <= muroNoMov;
-                end if;
+               
+
            
             when comprueboDireccion =>
                 p_write <= "0";
@@ -180,6 +180,7 @@ begin
                         p_posx <= posx_ant;
                         p_posy <= posy_ant;
                         p_estado <= pintaPacman;
+                        p_hayMuro<='0';
                     end if;
                 --Esto pinta el pacman en la posición anterior
                 else
@@ -197,11 +198,14 @@ begin
                 p_write <= "1";
                 if refresh = '1' then
                     p_ciclo <= ciclos +1;
-                    if ciclos >20 then
+                    p_enableMemoria <='1';
+                    if ciclos >10 then
                         p_write <= "0";
                         p_udlr <= udlrIn;
-                        p_estado <= botonDireccion;
+                        p_estado <= espera;
                         p_last_udlr <= last_udlr;
+                        done_reg <= '1';
+                        p_enableMemoria <='0';
                     else
                         p_estado <= estado;
                     end if;
@@ -213,5 +217,5 @@ begin
                 p_estado <= estado;
         end case;
     end process;
-
+enableMem <= enableMemoria;
 end Behavioral;
