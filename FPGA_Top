@@ -45,12 +45,12 @@ end Top;
 
 architecture Behavioral of Top is
 
-signal refreshAux,move,enableComecocos,enableGhost1, doneCC,doneG1, muertoghost: STD_LOGIC;
-signal writeComeCocos,writeGhost1,write : STD_LOGIC_VECTOR(0 DOWNTO 0);
-signal addraIn,addrbIn,addraInCC,addraInG1: STD_LOGIC_VECTOR(8 DOWNTO 0);
-signal dataIn,datbIn,dataInCC,dataInG1:STD_LOGIC_VECTOR(2 DOWNTO 0);
+signal refreshAux,move,enableComecocos,enableGhost1,enableGhost2,enableGhost3,enableGhost4, doneCC,doneG1,doneG2,doneG3,doneG4, muertoghost,muertoghost1,muertoghost2,muertoghost3,muertoghost4: STD_LOGIC;
+signal writeComeCocos,writeGhost1,writeGhost2,writeGhost3,writeGhost4,write : STD_LOGIC_VECTOR(0 DOWNTO 0);
+signal addraIn,addrbIn,addraInCC,addraInG1,addraInG2,addraInG3,addraInG4: STD_LOGIC_VECTOR(8 DOWNTO 0);
+signal dataIn,datbIn,dataInCC,dataInG1,dataInG2,dataInG3,dataInG4:STD_LOGIC_VECTOR(2 DOWNTO 0);
 signal dataOut,datbOut:STD_LOGIC_VECTOR(2 DOWNTO 0);
-signal udlr,udlr_ghost1:STD_LOGIC_VECTOR(3 DOWNTO 0);
+signal udlr,udlr_ghost1,udlr_ghost2,udlr_ghost3,udlr_ghost4:STD_LOGIC_VECTOR(3 DOWNTO 0);
 signal random : STD_LOGIC_VECTOR(4 DOWNTO 0);
 signal ejx,ejy :STD_LOGIC_VECTOR(9 DOWNTO 0);
 signal RGBaux,RGBOutaux, aux_douta_muro, aux_douta_bolita, aux_douta_cc,aux_douta_cc2, aux_douta_fant_r :STD_LOGIC_VECTOR(11 DOWNTO 0);
@@ -193,6 +193,60 @@ component Fantasma1 is
         write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
     );
 end component;
+component Fantasma2 is
+    Port(
+        clk          : in STD_LOGIC;
+        reset        : in STD_LOGIC;
+        refresh      : in STD_LOGIC;
+        move         : in STD_LOGIC;
+        empieza      : in std_logic;
+        udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
+        addressAIn   : in STD_LOGIC_VECTOR(8 DOWNTO 0);
+        addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+        dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+        enableMem    : out STD_LOGIC;
+        done         : out STD_LOGIC;
+        killghost    : out STD_LOGIC;
+        write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
+    );
+end component;
+component Fantasma3 is
+    Port(
+        clk          : in STD_LOGIC;
+        reset        : in STD_LOGIC;
+        refresh      : in STD_LOGIC;
+        move         : in STD_LOGIC;
+        empieza      : in std_logic;
+        udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
+        addressAIn   : in STD_LOGIC_VECTOR(8 DOWNTO 0);
+        addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+        dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+        enableMem    : out STD_LOGIC;
+        done         : out STD_LOGIC;
+        killghost    : out STD_LOGIC;
+        write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
+    );
+end component;
+component Fantasma4 is
+    Port(
+        clk          : in STD_LOGIC;
+        reset        : in STD_LOGIC;
+        refresh      : in STD_LOGIC;
+        move         : in STD_LOGIC;
+        empieza      : in std_logic;
+        udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
+        addressAIn   : in STD_LOGIC_VECTOR(8 DOWNTO 0);
+        addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+        dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+        enableMem    : out STD_LOGIC;
+        done         : out STD_LOGIC;
+        killghost    : out STD_LOGIC;
+        write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
+    );
+end component;
 component gestion_botones  is
     Port (
 
@@ -224,18 +278,20 @@ component LFSR_Random_Generator is
 end component;
 
 component  Selector is
-    Port ( 
-        addraInCC,addraInG1: in STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dataCC,dataG1: in STD_LOGIC_VECTOR(2 DOWNTO 0);
-        writeCC,writeG1: in STD_LOGIC_VECTOR(0 DOWNTO 0);
-           PACMAN : in STD_LOGIC;
-           clk : in STD_LOGIC;
-           GHOST1 : in STD_LOGIC;
-           DATA : out STD_LOGIC_VECTOR(2 downto 0);
-           WRITE : out STD_LOGIC_VECTOR(0 downto 0); 
-           ADDRESS : out STD_LOGIC_VECTOR(8 DOWNTO 0));
-           
-end component; 
+    Port (  
+        clk: in STD_LOGIC;
+     addraInCC,addraInG1,addraInG2,addraInG3,addraInG4: in STD_LOGIC_VECTOR(8 DOWNTO 0);
+        dataCC,dataG1,dataG2,dataG3,dataG4: in STD_LOGIC_VECTOR(2 DOWNTO 0);
+         writeCC,writeG1,writeG2,writeG3,writeG4: in STD_LOGIC_VECTOR(0 DOWNTO 0);
+         PACMAN : in STD_LOGIC;
+         GHOST1 : in STD_LOGIC;
+         GHOST2 : in STD_LOGIC;
+         GHOST3 : in STD_LOGIC;
+         GHOST4 : in STD_LOGIC;
+         ADDRESS : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+         DATA  : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+         WRITE : OUT STD_LOGIC_VECTOR(0 DOWNTO 0));
+end component;
 
 
 
@@ -245,13 +301,25 @@ end component;
  (
 writeCC=>writeComeCocos,
 writeG1=>writeGhost1,
+writeG2=>writeGhost2,
+writeG3=>writeGhost3,
+writeG4=>writeGhost4,
  dataCC=>dataInCC,
  dataG1=>dataInG1,
+ dataG2=>dataInG2,
+ dataG3=>dataInG3,
+ dataG4=>dataInG4,
  clk => clk,
  addraInCC =>addraInCC,
  addraInG1=>addraInG1,
+ addraInG2=>addraInG2,
+ addraInG3=>addraInG3,
+ addraInG4=>addraInG4,
  PACMAN => enableComecocos,
  ghost1 => enableGhost1,
+ ghost2 => enableGhost2,
+ ghost3 => enableGhost3,
+ ghost4 => enableGhost4,
  ADDRESS => addraIn,
  DATA =>dataIn,
  WRITE =>write
@@ -266,6 +334,18 @@ writeG1=>writeGhost1,
  movF1 : mov_fantasma
  port map(
  clk => clk, random_number_in => random, udlr_ghost=>udlr_ghost1
+ );
+  movF2 : mov_fantasma
+ port map(
+ clk => clk, random_number_in => random, udlr_ghost=>udlr_ghost2
+ );
+  movF3 : mov_fantasma
+ port map(
+ clk => clk, random_number_in => random, udlr_ghost=>udlr_ghost3
+ );
+  movF4 : mov_fantasma
+ port map(
+ clk => clk, random_number_in => random, udlr_ghost=>udlr_ghost4
  );
  
  generadorF1 :LFSR_Random_Generator
@@ -284,7 +364,7 @@ botones : gestion_botones
     left => left,
     right => right,
     move => move,
-    udlrcc => udlr --CAMBIAR ESTO ES PARA PROBAR SI FUNCIONA LO DEL LAGO
+    udlrcc => udlr 
     );
     
 comecocos :  MaqPACMAN
@@ -293,7 +373,7 @@ comecocos :  MaqPACMAN
         clk => clk,         
         reset  => reset,      
         refresh  => refreshAux,
-        empieza =>doneG1,         
+        empieza =>doneG4,         
         udlrIn  => udlr,     
         addressAOut  =>addraInCC,
         dAIn     =>dataOut,    
@@ -320,7 +400,61 @@ ghost1 :  Fantasma1
         enableMem    =>enableGhost1,
         done         =>doneG1,
         write        => writeGhost1,
-        killghost    => muertoghost
+        killghost    => muertoghost2
+        );
+        ghost2 :  Fantasma2
+    port map
+    (
+        empieza => doneG1,
+        clk => clk,         
+        reset  => reset,      
+        refresh  => refreshAux,    
+        move => move  ,      
+        udlrIn  => udlr_ghost2,     
+        addressAIn  =>"000000000" ,
+        addressAOut  =>addraInG2,
+        dAIn     =>dataOut,    
+        dAOut       =>dataInG2, 
+        enableMem    =>enableGhost2,
+        done         =>doneG2,
+        write        => writeGhost2,
+        killghost    => muertoghost3
+        );
+        ghost3 :  Fantasma3
+    port map
+    (
+        empieza => doneG2,
+        clk => clk,         
+        reset  => reset,      
+        refresh  => refreshAux,    
+        move => move  ,      
+        udlrIn  => udlr_ghost3,     
+        addressAIn  =>"000000000" ,
+        addressAOut  =>addraInG3,
+        dAIn     =>dataOut,    
+        dAOut       =>dataInG3, 
+        enableMem    =>enableGhost3,
+        done         =>doneG4,
+        write        => writeGhost3,
+        killghost    => muertoghost3
+        );
+        ghost4 :  Fantasma4
+    port map
+    (
+        empieza => doneG3,
+        clk => clk,         
+        reset  => reset,      
+        refresh  => refreshAux,    
+        move => move  ,      
+        udlrIn  => udlr_ghost4,     
+        addressAIn  =>"000000000" ,
+        addressAOut  =>addraInG4,
+        dAIn     =>dataOut,    
+        dAOut       =>dataInG4, 
+        enableMem    =>enableGhost4,
+        done         =>doneG4,
+        write        => writeGhost4,
+        killghost    => muertoghost4
         );
 memoria :  blk_mem_gen_0 
     port map(
@@ -413,4 +547,5 @@ pintor : dibuja
      refresh => refreshAux
     );
  RGB<=RGBOutaux;
+ muertoghost <= muertoghost1 OR muertoghost2 OR muertoghost3 OR muertoghost4;
 end Behavioral;
