@@ -25,34 +25,35 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity LFSR_Random_Generator is
     Port ( clk               : in std_logic;               -- Reloj de entrada
          refresh             : in std_logic;               -- refresh
+         seed                 : in std_logic_vector (4 downto 0);
          random_number_out : out std_logic_vector(4 downto 0)  -- Salida de 5 bits
         );
 end LFSR_Random_Generator;
 
 architecture Behavioral of LFSR_Random_Generator is
 
-    signal lfsr,p_lfsr : std_logic_vector(4 downto 0) := "10101"; -- Semilla inicial
+    signal lfsr,p_lfsr : std_logic_vector(4 downto 0); -- Semilla inicial
     signal cont,p_cont,Aux: std_logic_vector(10 downto 0):= "00000000000";
     signal cont3,p_cont3: std_logic_vector(6 downto 0):= "0000000";
 begin
     -- Proceso que genera los números pseudoaleatorios en cada flanco de subida del reloj
-    process(clk,cont)
+    process(clk,cont,seed)
     begin
-
+    lfsr <= seed;
         if cont = 500 then
             -- Si se activa el refresh, se carga la semilla inicial
-            lfsr <= "10101"; -- Semilla inicial (nunca todo cero)
+            -- Semilla inicial (nunca todo cero)
             cont <= "00000000000";
             Aux <= Aux +1;
             case Aux is
                 when "00000000001" => -- no movement
-                lfsr <= "10100";
+                lfsr <= "10100"+seed;
                 when "00000000010" => -- no movement
-                lfsr <= "10010";
+                lfsr <= "10010" + seed;
                when "00000000011" => -- no movement
-                lfsr <= "00111";
+                lfsr <= "00111" + seed;
                 when others => -- no movement
-                lfsr <= "10111";
+                lfsr <= "10111" + seed;
                 Aux <= "00000000000";
                 end case;
         elsif rising_edge(clk) then
