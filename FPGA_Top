@@ -49,7 +49,7 @@ signal refreshAux,move,enableComecocos,enableGhost1,enableGhost2,enableGhost3,en
 signal writeComeCocos,writeGhost1,writeGhost2,writeGhost3,writeGhost4,write : STD_LOGIC_VECTOR(0 DOWNTO 0);
 signal addraIn,addrbIn,addraInCC,addraInG1,addraInG2,addraInG3,addraInG4: STD_LOGIC_VECTOR(8 DOWNTO 0);
 signal dataIn,datbIn,dataInCC,dataInG1,dataInG2,dataInG3,dataInG4:STD_LOGIC_VECTOR(2 DOWNTO 0);
-signal dataOut,datbOut:STD_LOGIC_VECTOR(2 DOWNTO 0);
+signal dataOut,datbOut,dataReset:STD_LOGIC_VECTOR(2 DOWNTO 0);
 signal udlr,udlr_ghost1,udlr_ghost2,udlr_ghost3,udlr_ghost4:STD_LOGIC_VECTOR(3 DOWNTO 0);
 signal random1,random2,random3,random4 : STD_LOGIC_VECTOR(4 DOWNTO 0);
 signal ejx,ejy :STD_LOGIC_VECTOR(9 DOWNTO 0);
@@ -72,6 +72,13 @@ component blk_mem_gen_0 is
         dinb : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         doutb : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
     );
+end component;
+component blk_mem_gen_1 IS
+  PORT (
+    clka : IN STD_LOGIC;
+    addra : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
+    douta : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
+  );
 end component;
 
 component PacMan_Sound is
@@ -275,27 +282,55 @@ component LFSR_Random_Generator is
 end component;
 
 component  Selector is
-    Port (  
-        clk: in STD_LOGIC;
-     addraInCC,addraInG1,addraInG2,addraInG3,addraInG4: in STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dataCC,dataG1,dataG2,dataG3,dataG4: in STD_LOGIC_VECTOR(2 DOWNTO 0);
-         writeCC,writeG1,writeG2,writeG3,writeG4: in STD_LOGIC_VECTOR(0 DOWNTO 0);
-         PACMAN : in STD_LOGIC;
-         GHOST1 : in STD_LOGIC;
-         GHOST2 : in STD_LOGIC;
-         GHOST3 : in STD_LOGIC;
-         GHOST4 : in STD_LOGIC;
-         ADDRESS : out STD_LOGIC_VECTOR(8 DOWNTO 0);
-         DATA  : out STD_LOGIC_VECTOR(2 DOWNTO 0);
-         WRITE : OUT STD_LOGIC_VECTOR(0 DOWNTO 0));
+    Port (
+        clk        : in  STD_LOGIC;
+        reset      : in  STD_LOGIC;
+        addraInCC  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
+        addraInG1  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
+        addraInG2  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
+        addraInG3  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
+        addraInG4  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
+        dataCC     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dataG1     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dataG2     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dataG3     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dataG4     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dataReset  : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
+        writeCC    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
+        writeG1    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
+        writeG2    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
+        writeG3    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
+        writeG4    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
+        eje_x      : in  STD_LOGIC_VECTOR(9 DOWNTO 0);
+        eje_y      : in  STD_LOGIC_VECTOR(9 DOWNTO 0);
+        PACMAN     : in  STD_LOGIC;
+        GHOST1     : in  STD_LOGIC;
+        GHOST2     : in  STD_LOGIC;
+        GHOST3     : in  STD_LOGIC;
+        GHOST4     : in  STD_LOGIC;
+        ADDRESS    : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+        DATA       : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+        WRITE      : out STD_LOGIC_VECTOR(0 DOWNTO 0)
+    );
 end component;
 
 
 
  begin
+ rom : blk_mem_gen_1 
+  port map(
+    clka => clk,
+    addra =>addraIn, 
+    douta => dataReset
+    );
+  
  sel : Selector
  port map
  (
+ eje_x =>ejx,
+ eje_y => ejy,
+ reset => reset,
+ dataReset =>dataReset,
 writeCC=>writeComeCocos,
 writeG1=>writeGhost1,
 writeG2=>writeGhost2,
@@ -554,7 +589,7 @@ pintor : dibuja
  driver: VGA_DRIVER
    port map(
      clk => clk, 
-     reset=> reset, 
+     reset=> '0', 
      RGBin=> RGBaux,
      VS =>VS, 
      HS =>HS,  
