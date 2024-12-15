@@ -38,13 +38,14 @@ entity Top is
         up,down,left,right : in STD_LOGIC;
         RGB:out std_logic_vector(11 downto 0);
         HS: out std_logic;
+        AUDIO_OUT: out std_logic;
         VS: out std_logic
     );
 end Top;
 
 architecture Behavioral of Top is
 
-signal refreshAux,move,enableComecocos,enableGhost1, doneCC,doneG1: STD_LOGIC;
+signal refreshAux,move,enableComecocos,enableGhost1, doneCC,doneG1, muertoghost: STD_LOGIC;
 signal writeComeCocos,writeGhost1,write : STD_LOGIC_VECTOR(0 DOWNTO 0);
 signal addraIn,addrbIn,addraInCC,addraInG1: STD_LOGIC_VECTOR(8 DOWNTO 0);
 signal dataIn,datbIn,dataInCC,dataInG1:STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -52,7 +53,9 @@ signal dataOut,datbOut:STD_LOGIC_VECTOR(2 DOWNTO 0);
 signal udlr,udlr_ghost1:STD_LOGIC_VECTOR(3 DOWNTO 0);
 signal random : STD_LOGIC_VECTOR(4 DOWNTO 0);
 signal ejx,ejy :STD_LOGIC_VECTOR(9 DOWNTO 0);
-signal RGBaux,RGBOutaux :STD_LOGIC_VECTOR(11 DOWNTO 0);
+signal RGBaux,RGBOutaux, aux_douta_muro, aux_douta_bolita, aux_douta_cc,aux_douta_cc2, aux_douta_fant_r :STD_LOGIC_VECTOR(11 DOWNTO 0);
+signal aux_addra_muro, aux_addra_bolita, aux_addra_cc,aux_addra_cc2, aux_addra_fant_r : std_logic_vector (7 downto 0);
+
 
 component blk_mem_gen_0 is
     PORT (
@@ -71,14 +74,75 @@ component blk_mem_gen_0 is
     );
 end component;
 
+component PacMan_Sound is
+    Port (
+        CLK_IN    : in  STD_LOGIC;  -- Reloj 100 MHz
+        AUDIO_OUT : out STD_LOGIC   -- Salida de audio (onda cuadrada)
+    );
+end component;
+
+component muro is
+    port (
+        clka: in std_logic ;
+        addra: in std_logic_vector (7 downto 0);
+        douta : out std_logic_vector (11 downto 0));
+end component ;
+
+component bolita is
+    port (
+        clka: in std_logic ;
+        addra: in std_logic_vector (7 downto 0);
+        douta : out std_logic_vector (11 downto 0));
+end component ;
+
+component pacman_sprite is
+    port (
+        clka: in std_logic ;
+        addra: in std_logic_vector (7 downto 0);
+        douta : out std_logic_vector (11 downto 0));
+end component ;
+
+component pacman_sprite2 is
+    port (
+        clka: in std_logic ;
+        addra: in std_logic_vector (7 downto 0);
+        douta : out std_logic_vector (11 downto 0));
+end component ;
+
+component fantasma_r is
+    port (
+        clka: in std_logic ;
+        addra: in std_logic_vector (7 downto 0);
+        douta : out std_logic_vector (11 downto 0));
+end component ;
+
 component dibuja is
     Port (
+        clk : in STD_LOGIC;
+        reset : in STD_LOGIC;
+        
         eje_x : in STD_LOGIC_VECTOR (9 downto 0);
         eje_y : in STD_LOGIC_VECTOR (9 downto 0);
 
         codigo_color : in std_logic_vector (2 downto 0);
         direccion : out STD_LOGIC_VECTOR (8 downto 0);
-        RGB : out STD_LOGIC_VECTOR (11 downto 0));
+        RGB : out STD_LOGIC_VECTOR (11 downto 0);
+        
+        data_muro : in std_logic_vector (11 downto 0);
+        dir_muro : out std_logic_vector (7 downto 0);
+        
+        data_bolita : in std_logic_vector (11 downto 0);
+        dir_bolita: out std_logic_vector (7 downto 0);
+        
+        data_cc : in std_logic_vector (11 downto 0);
+        dir_cc: out std_logic_vector (7 downto 0);
+        
+        data_cc2 : in std_logic_vector (11 downto 0);
+        dir_cc2: out std_logic_vector (7 downto 0);
+        
+        data_fant_r : in std_logic_vector (11 downto 0);
+        dir_fant_r: out std_logic_vector (7 downto 0));
+        
 end component;
 
 
@@ -100,15 +164,14 @@ component MaqPACMAN is
         clk          : in STD_LOGIC;
         reset        : in STD_LOGIC;
         refresh      : in STD_LOGIC;
-        move         : in STD_LOGIC;
         empieza      : in std_logic;
         udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
-        addressAIn   : in STD_LOGIC_VECTOR(8 DOWNTO 0);
         addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
         dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
         dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
         enableMem    : out STD_LOGIC;
         done         : out STD_LOGIC;
+        muerte       : in STD_LOGIC;
         write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
     );
 end component;
@@ -126,6 +189,7 @@ component Fantasma1 is
         dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
         enableMem    : out STD_LOGIC;
         done         : out STD_LOGIC;
+        killghost    : out STD_LOGIC;
         write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
     );
 end component;
@@ -192,6 +256,13 @@ writeG1=>writeGhost1,
  DATA =>dataIn,
  WRITE =>write
  );
+ 
+ sonidoPacman : PacMan_Sound
+ port map(
+
+ clk_IN => clk, AUDIO_OUT => AUDIO_OUT
+ );
+ 
  movF1 : mov_fantasma
  port map(
  clk => clk, random_number_in => random, udlr_ghost=>udlr_ghost1
@@ -222,16 +293,15 @@ comecocos :  MaqPACMAN
         clk => clk,         
         reset  => reset,      
         refresh  => refreshAux,
-        empieza =>doneG1,    
-        move => move  ,      
+        empieza =>doneG1,         
         udlrIn  => udlr,     
-        addressAIn  =>"000000000" ,
         addressAOut  =>addraInCC,
         dAIn     =>dataOut,    
         dAOut       =>dataInCC, 
         enableMem    =>enableComecocos,
         done         =>doneCC,
-        write        => writeComeCocos
+        write        => writeComeCocos,
+        muerte => muertoghost 
         );
     
 ghost1 :  Fantasma1
@@ -249,7 +319,8 @@ ghost1 :  Fantasma1
         dAOut       =>dataInG1, 
         enableMem    =>enableGhost1,
         done         =>doneG1,
-        write        => writeGhost1
+        write        => writeGhost1,
+        killghost    => muertoghost
         );
 memoria :  blk_mem_gen_0 
     port map(
@@ -266,14 +337,67 @@ memoria :  blk_mem_gen_0
         dinb => (others =>'0'),
         doutb =>datbOut  
     );
+    
+murete : muro
+    port map(
+        clka =>clk,
+        addra => aux_addra_muro,
+        douta => aux_douta_muro
+    );    
+    
+boli : bolita
+    port map(
+        clka =>clk,
+        addra => aux_addra_bolita,
+        douta => aux_douta_bolita
+    );
+
+cc_sprite : pacman_sprite
+    port map(
+        clka =>clk,
+        addra => aux_addra_cc,
+        douta => aux_douta_cc
+    ); 
+    
+cc_sprite2 : pacman_sprite2
+    port map(
+        clka =>clk,
+        addra => aux_addra_cc2,
+        douta => aux_douta_cc2
+    ); 
+
+fant_r1 : fantasma_r
+    port map(
+        clka =>clk,
+        addra => aux_addra_fant_r,
+        douta => aux_douta_fant_r
+    );
+
 pintor : dibuja
   port map(
+           clk => clk,
+           reset => reset,
            eje_x => ejx,
            eje_y =>ejy,
            
            codigo_color => datbOut,
            direccion => addrbIn,
            
+          data_muro => aux_douta_muro,  
+          dir_muro => aux_addra_muro, 
+           
+          data_bolita => aux_douta_bolita,  
+          dir_bolita => aux_addra_bolita, 
+          
+          data_cc => aux_douta_cc ,
+          dir_cc => aux_addra_cc ,
+
+          data_cc2 => aux_douta_cc2 ,
+          dir_cc2 => aux_addra_cc2 ,
+          
+          data_fant_r => aux_douta_fant_r  ,
+          dir_fant_r => aux_addra_fant_r  ,
+                     
           RGB => RGBaux
     );
  driver: VGA_DRIVER
