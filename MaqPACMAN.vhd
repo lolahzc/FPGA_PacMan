@@ -31,6 +31,8 @@ architecture Behavioral of MaqPACMAN is
     signal p_write : std_logic_vector(0 downto 0);
     signal done_reg : std_logic := '0';
     signal p_ciclo,ciclos : unsigned (4 downto 0);
+    signal p_contVidas,contVidas : unsigned (1 downto 0);
+    signal gameOver : std_logic :='0';
     signal enableMemoria,p_enableMemoria: std_logic :='1';
 begin
 
@@ -44,6 +46,7 @@ begin
             posy_ant <= (others => '0');
             posx_ant <= (others => '0');
             ciclos <= "00000";
+            contVidas <= "00";
             addressAOut <=(others => '0');
             dAOut <= "000";
             hayMuro <= '0';
@@ -53,9 +56,8 @@ begin
             last_udlr <= "0001";
             enableMemoria<='1';
         elsif rising_edge(clk) then
-        enableMemoria<=p_enableMemoria;
+            enableMemoria<=p_enableMemoria;
             addressAOut <= p_address;
-            
             dAOut <= p_Dout;
             estado <= p_estado;
             posx <= p_posx;
@@ -66,13 +68,14 @@ begin
             hayMuro <= p_hayMuro;
             write <= p_write;
             ciclos <= p_ciclo;
+            contVidas <= p_contVidas;
             udlr <= p_udlr;
             last_udlr <= p_last_udlr;
             done <= done_reg;
         end if;
     end process;
 
-    comb: process(estado, muerte, refresh, empieza, p_last_udlr,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, done_reg, p_posy, posx,posx_ant,posy_ant, posy,ciclos, choque)
+    comb: process(estado, muerte, refresh, empieza, p_last_udlr,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, done_reg, p_posy, posx,posx_ant,posy_ant, posy,ciclos,contVidas, choque)
     begin
         -- Default outputs
 
@@ -81,6 +84,7 @@ begin
         p_last_udlr <= last_udlr; --Mantiene el valor del anterior
         p_udlr <= udlr; --Mantiene el valor del anterior
         p_ciclo <= "00000"; --Resetea el ciclo
+        p_contVidas <= contVidas;
         p_Dout <= "000"; --Pone vacío por defecto
         p_write <= "0"; --Por defecto no escribe
         p_estado <= estado; --Se manteine en el mismo estado
@@ -94,6 +98,10 @@ begin
         p_hayMuro <= hayMuro;
         case estado is
             when reposo =>                --En reposo que dibuje el pacman en su posición
+            
+                    if(gameOver = '1') then
+                    p_estado <= reposo;
+                    else
                     p_posx <= "0001";  -- Initial X position
                     p_posy <= "00001"; -- Initial Y position
                     p_Dout <= "011";   -- Draw Pac-Man
@@ -102,6 +110,7 @@ begin
                     p_udlr <= udlrIn;
                     p_estado <= espera;
                     p_choque <= '0';
+                    end if;
                                
             when espera =>
              p_enableMemoria <= '0'; -- que no toque nada de memoria     
@@ -114,8 +123,11 @@ begin
              else
             p_estado <=  reposo; 
             done_reg <='1';
-            
-            
+            p_contVidas <= contVidas + 1;
+            if(contVidas >=3) then
+            gameOver<='1';
+            p_estado <= reposo;  
+            end if;
             end if;
        
             when botonDireccion =>
@@ -161,8 +173,6 @@ begin
                     p_write <= "1";
                     p_estado <= comprueboDireccion;
                
-
-           
             when comprueboDireccion =>
                 p_write <= "0";
                 p_address <= p_posx & p_posy;
@@ -214,7 +224,7 @@ begin
                 if refresh = '1' then
                     p_ciclo <= ciclos +1;
                     p_enableMemoria <='1';
-                    if ciclos >10 then
+                    if ciclos >20 then
                         p_write <= "0";
                         p_udlr <= udlrIn;
                         p_estado <= espera;
