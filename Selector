@@ -34,42 +34,47 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity Selector is
     Port (  
         clk: in STD_LOGIC;
-     addraInCC,addraInG1: in STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dataCC,dataG1: in STD_LOGIC_VECTOR(2 DOWNTO 0);
-         writeCC,writeG1: in STD_LOGIC_VECTOR(0 DOWNTO 0);
+     addraInCC,addraInG1,addraInG2,addraInG3,addraInG4: in STD_LOGIC_VECTOR(8 DOWNTO 0);
+        dataCC,dataG1,dataG2,dataG3,dataG4: in STD_LOGIC_VECTOR(2 DOWNTO 0);
+         writeCC,writeG1,writeG2,writeG3,writeG4: in STD_LOGIC_VECTOR(0 DOWNTO 0);
          PACMAN : in STD_LOGIC;
          GHOST1 : in STD_LOGIC;
+         GHOST2 : in STD_LOGIC;
+         GHOST3 : in STD_LOGIC;
+         GHOST4 : in STD_LOGIC;
          ADDRESS : out STD_LOGIC_VECTOR(8 DOWNTO 0);
          DATA  : out STD_LOGIC_VECTOR(2 DOWNTO 0);
          WRITE : OUT STD_LOGIC_VECTOR(0 DOWNTO 0));
 end selector;
 architecture Behavioral of Selector is
-signal p_address, direccion : STD_LOGIC_VECTOR(8 DOWNTO 0):= (others => '0');
-signal p_data,dato: std_logic_vector(2 downto 0):=(others => '0');
-signal p_write,escribe: std_logic_vector(0 downto 0):=(others => '0');
+    signal p_address : STD_LOGIC_VECTOR(8 DOWNTO 0) := (others => '0');
+    signal p_data    : STD_LOGIC_VECTOR(2 DOWNTO 0) := (others => '0');
+    signal p_write   : STD_LOGIC_VECTOR(0 DOWNTO 0) := (others => '0');
 begin
-seleccion:process(clk,addraInCC,addraInG1,writeG1,writeCC,dataCC,dataG1,PACMAN,GHOST1)
-begin
-    if PACMAN = '1' then
-        p_address <= addraInCC;
-        p_data    <= dataCC;
-        p_write   <= writeCC;
-    elsif GHOST1 = '1' then
-        p_address <= addraInG1;    
-        p_data    <= dataG1;
-        p_write   <= writeG1;
-    else
-        p_address <= direccion; -- Asigna un valor predeterminado
-        p_data    <= dato;
-        p_write   <= escribe;
-    end if;
-end process;
 
-    direccion <= p_address;
-    dato <= p_data;
-    escribe<= p_write;
+    p_address <= addraInCC when PACMAN = '1' else
+                 addraInG1 when GHOST1 = '1' else
+                 addraInG2 when GHOST2 = '1' else
+                 addraInG3 when GHOST3 = '1' else
+                 addraInG4 when GHOST4 = '1' else
+                 (others => '0');
 
-    DATA <= dato;
- ADDRESS <= direccion;
- WRITE <= escribe;
+    p_data <= dataCC when PACMAN = '1' else
+              dataG1 when GHOST1 = '1' else
+               dataG2 when GHOST2 = '1' else
+                dataG3 when GHOST3 = '1' else
+                 dataG4 when GHOST4 = '1' else
+              (others => '0');
+
+    p_write <= writeCC when PACMAN = '1' else
+               writeG1 when GHOST1 = '1' else
+               writeG2 when GHOST1 = '1' else
+               writeG3 when GHOST1 = '1' else
+               writeG4 when GHOST1 = '1' else
+               (others => '0');
+
+    ADDRESS <= p_address;
+    DATA    <= p_data;
+    WRITE   <= p_write;
+
 end Behavioral;
