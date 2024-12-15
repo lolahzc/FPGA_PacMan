@@ -95,7 +95,20 @@ begin
                     REDaux <= data_fant_r(11 downto 8);
                     BLUaux <= data_fant_r(7 downto 4);
                     GRNaux <= data_fant_r(3 downto 0);
-
+                    
+                 when "101" =>
+                    REDaux <= "1111";
+                    BLUaux <= "1111";
+                    GRNaux <= "0000";
+                when "110" =>
+                    REDaux <= "0000";
+                    BLUaux <= "1111";
+                    GRNaux <= "0000";
+              
+                when "111" =>
+                    REDaux <= "0000";
+                    BLUaux <= "1111";
+                    GRNaux <= "1111";
                 when others => 
                     REDaux <= "0000";
                     BLUaux <= "0000";
