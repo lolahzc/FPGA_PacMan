@@ -51,7 +51,7 @@ signal addraIn,addrbIn,addraInCC,addraInG1,addraInG2,addraInG3,addraInG4: STD_LO
 signal dataIn,datbIn,dataInCC,dataInG1,dataInG2,dataInG3,dataInG4:STD_LOGIC_VECTOR(2 DOWNTO 0);
 signal dataOut,datbOut:STD_LOGIC_VECTOR(2 DOWNTO 0);
 signal udlr,udlr_ghost1,udlr_ghost2,udlr_ghost3,udlr_ghost4:STD_LOGIC_VECTOR(3 DOWNTO 0);
-signal random : STD_LOGIC_VECTOR(4 DOWNTO 0);
+signal random1,random2,random3,random4 : STD_LOGIC_VECTOR(4 DOWNTO 0);
 signal ejx,ejy :STD_LOGIC_VECTOR(9 DOWNTO 0);
 signal RGBaux,RGBOutaux, aux_douta_muro, aux_douta_bolita, aux_douta_cc,aux_douta_cc2, aux_douta_fant_r :STD_LOGIC_VECTOR(11 DOWNTO 0);
 signal aux_addra_muro, aux_addra_bolita, aux_addra_cc,aux_addra_cc2, aux_addra_fant_r : std_logic_vector (7 downto 0);
@@ -269,6 +269,7 @@ end component;
 component LFSR_Random_Generator is
     Port ( clk               : in std_logic;               -- Reloj de entrada
            refresh             : in std_logic;               -- Reset
+           seed                : in std_logic_vector(4 downto 0);
            random_number_out : out std_logic_vector(4 downto 0)  -- Salida de 5 bits
            );
 end component;
@@ -329,28 +330,52 @@ writeG4=>writeGhost4,
  
  movF1 : mov_fantasma
  port map(
- clk => clk, random_number_in => random, udlr_ghost=>udlr_ghost1
+ clk => clk, random_number_in => random1, udlr_ghost=>udlr_ghost1
  );
   movF2 : mov_fantasma
  port map(
- clk => clk, random_number_in => random, udlr_ghost=>udlr_ghost2
+ clk => clk, random_number_in => random2, udlr_ghost=>udlr_ghost2
  );
   movF3 : mov_fantasma
  port map(
- clk => clk, random_number_in => random, udlr_ghost=>udlr_ghost3
+ clk => clk, random_number_in => random3, udlr_ghost=>udlr_ghost3
  );
   movF4 : mov_fantasma
  port map(
- clk => clk, random_number_in => random, udlr_ghost=>udlr_ghost4
+ clk => clk, random_number_in => random4, udlr_ghost=>udlr_ghost4
  );
  
  generadorF1 :LFSR_Random_Generator
  port map (
  clk => clk,
  refresh => refreshAux,
- random_number_out => random
+ seed => "10100",
+ random_number_out => random1
  
  );
+ generadorF2 :LFSR_Random_Generator
+ port map (
+ clk => clk,
+ refresh => refreshAux,
+ seed => "10001",
+ random_number_out => random2
+ 
+ );
+ generadorF3 :LFSR_Random_Generator
+ port map (
+ clk => clk,
+ refresh => refreshAux,
+ seed => "11110",
+ random_number_out => random3
+ 
+ );
+generadorF4 :LFSR_Random_Generator
+ port map (
+ clk => clk,
+ refresh => refreshAux,
+ seed => "10110",
+ random_number_out => random4
+ ); 
 botones : gestion_botones 
     port map(
     clk => clk,
@@ -395,7 +420,7 @@ ghost1 :  Fantasma1
         enableMem    =>enableGhost1,
         done         =>doneG1,
         write        => writeGhost1,
-        killghost    => muertoghost2
+        killghost    => muertoghost1
         );
         ghost2 :  fantasma2
     port map
@@ -412,7 +437,7 @@ ghost1 :  Fantasma1
         enableMem    =>enableGhost2,
         done         =>doneG2,
         write        => writeGhost2,
-        killghost    => muertoghost3
+        killghost    => muertoghost2
         );
         ghost3 :  Fantasma3
     port map
@@ -427,7 +452,7 @@ ghost1 :  Fantasma1
         dAIn     =>dataOut,    
         dAOut       =>dataInG3, 
         enableMem    =>enableGhost3,
-        done         =>doneG4,
+        done         =>doneG3,
         write        => writeGhost3,
         killghost    => muertoghost3
         );
