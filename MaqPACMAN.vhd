@@ -32,7 +32,7 @@ architecture Behavioral of MaqPACMAN is
     signal done_reg : std_logic := '0';
     signal p_ciclo,ciclos : unsigned (4 downto 0);
     signal p_contVidas,contVidas : unsigned (1 downto 0);
-    signal gameOver : std_logic :='0';
+    signal gameOver, p_gameOver : std_logic ;
     signal enableMemoria,p_enableMemoria: std_logic :='1';
 begin
 
@@ -47,6 +47,7 @@ begin
             posx_ant <= (others => '0');
             ciclos <= "00000";
             contVidas <= "00";
+            gameOver <= '0';
             addressAOut <=(others => '0');
             dAOut <= "000";
             hayMuro <= '0';
@@ -62,6 +63,7 @@ begin
             estado <= p_estado;
             posx <= p_posx;
             posy <= p_posy;
+            gameOver <= p_gameOver;
             choque<=p_choque;
             posx_ant <= p_posx_ant;
             posy_ant <= p_posy_ant;
@@ -96,6 +98,7 @@ begin
         p_choque <= choque;
         done_reg <= '0';
         p_hayMuro <= hayMuro;
+        p_gameOver <= gameOver;
         case estado is
             when reposo =>                --En reposo que dibuje el pacman en su posición
             
@@ -121,11 +124,16 @@ begin
                 P_estado <= estado;                 
                 end if;
              else
-            p_estado <=  reposo; 
+             
+            if(choque = '1') then
             done_reg <='1';
+            else 
+            done_reg <='0';
+            end if; 
+            p_estado <=  reposo; 
             p_contVidas <= contVidas + 1;
             if(contVidas >=3) then
-            gameOver<='1';
+            p_gameOver<='1';
             p_estado <= reposo;  
             end if;
             end if;
@@ -205,7 +213,7 @@ begin
                     end if;
                 --Esto pinta el pacman en la posición anterior
 
-                    elsif(dAIn = "100") then               
+                    elsif(dAIn = "100" or dAIn = "110" or dAIn = "101" or dAIn = "111") then               
                     p_hayMuro<='0';
                     p_choque <='1';
                     p_estado <= espera;
