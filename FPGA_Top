@@ -183,7 +183,6 @@ component Fantasma1 is
         move         : in STD_LOGIC;
         empieza      : in std_logic;
         udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
-        addressAIn   : in STD_LOGIC_VECTOR(8 DOWNTO 0);
         addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
         dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
         dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -193,7 +192,7 @@ component Fantasma1 is
         write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
     );
 end component;
-component Fantasma2 is
+component fantasma2 is
     Port(
         clk          : in STD_LOGIC;
         reset        : in STD_LOGIC;
@@ -201,7 +200,6 @@ component Fantasma2 is
         move         : in STD_LOGIC;
         empieza      : in std_logic;
         udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
-        addressAIn   : in STD_LOGIC_VECTOR(8 DOWNTO 0);
         addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
         dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
         dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -219,7 +217,6 @@ component Fantasma3 is
         move         : in STD_LOGIC;
         empieza      : in std_logic;
         udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
-        addressAIn   : in STD_LOGIC_VECTOR(8 DOWNTO 0);
         addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
         dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
         dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -237,7 +234,6 @@ component Fantasma4 is
         move         : in STD_LOGIC;
         empieza      : in std_logic;
         udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
-        addressAIn   : in STD_LOGIC_VECTOR(8 DOWNTO 0);
         addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
         dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
         dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -393,7 +389,6 @@ ghost1 :  Fantasma1
         refresh  => refreshAux,    
         move => move  ,      
         udlrIn  => udlr_ghost1,     
-        addressAIn  =>"000000000" ,
         addressAOut  =>addraInG1,
         dAIn     =>dataOut,    
         dAOut       =>dataInG1, 
@@ -402,7 +397,7 @@ ghost1 :  Fantasma1
         write        => writeGhost1,
         killghost    => muertoghost2
         );
-        ghost2 :  Fantasma2
+        ghost2 :  fantasma2
     port map
     (
         empieza => doneG1,
@@ -411,7 +406,6 @@ ghost1 :  Fantasma1
         refresh  => refreshAux,    
         move => move  ,      
         udlrIn  => udlr_ghost2,     
-        addressAIn  =>"000000000" ,
         addressAOut  =>addraInG2,
         dAIn     =>dataOut,    
         dAOut       =>dataInG2, 
@@ -429,7 +423,6 @@ ghost1 :  Fantasma1
         refresh  => refreshAux,    
         move => move  ,      
         udlrIn  => udlr_ghost3,     
-        addressAIn  =>"000000000" ,
         addressAOut  =>addraInG3,
         dAIn     =>dataOut,    
         dAOut       =>dataInG3, 
@@ -447,7 +440,6 @@ ghost1 :  Fantasma1
         refresh  => refreshAux,    
         move => move  ,      
         udlrIn  => udlr_ghost4,     
-        addressAIn  =>"000000000" ,
         addressAOut  =>addraInG4,
         dAIn     =>dataOut,    
         dAOut       =>dataInG4, 
