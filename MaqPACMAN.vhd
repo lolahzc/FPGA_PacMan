@@ -49,7 +49,7 @@ begin
             contVidas <= "00";
             gameOver <= '0';
             addressAOut <=(others => '0');
-            dAOut <= "000";
+            dAOut <= "001";
             hayMuro <= '0';
             choque <='0';
             write <="0";
