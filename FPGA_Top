@@ -21,15 +21,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 
 entity Top is
     Port (
@@ -45,559 +37,576 @@ end Top;
 
 architecture Behavioral of Top is
 
-signal refreshAux,move,enableComecocos,enableGhost1,enableGhost2,enableGhost3,enableGhost4, doneCC,doneG1,doneG2,doneG3,doneG4, muertoghost,muertoghost1,muertoghost2,muertoghost3,muertoghost4: STD_LOGIC;
-signal writeComeCocos,writeGhost1,writeGhost2,writeGhost3,writeGhost4,write : STD_LOGIC_VECTOR(0 DOWNTO 0);
-signal addraIn,addrbIn,addraInCC,addraInG1,addraInG2,addraInG3,addraInG4: STD_LOGIC_VECTOR(8 DOWNTO 0);
-signal dataIn,datbIn,dataInCC,dataInG1,dataInG2,dataInG3,dataInG4:STD_LOGIC_VECTOR(2 DOWNTO 0);
-signal dataOut,datbOut,dataReset:STD_LOGIC_VECTOR(2 DOWNTO 0);
-signal udlr,udlr_ghost1,udlr_ghost2,udlr_ghost3,udlr_ghost4:STD_LOGIC_VECTOR(3 DOWNTO 0);
-signal random1,random2,random3,random4 : STD_LOGIC_VECTOR(4 DOWNTO 0);
-signal ejx,ejy :STD_LOGIC_VECTOR(9 DOWNTO 0);
-signal RGBaux,RGBOutaux, aux_douta_muro, aux_douta_bolita, aux_douta_cc,aux_douta_cc2, aux_douta_fant_r :STD_LOGIC_VECTOR(11 DOWNTO 0);
-signal aux_addra_muro, aux_addra_bolita, aux_addra_cc,aux_addra_cc2, aux_addra_fant_r : std_logic_vector (7 downto 0);
+    signal refreshAux,move,enableComecocos,enableGhost1,enableGhost2,enableGhost3,enableGhost4, doneCC,doneG1,doneG2,doneG3,doneG4, muertoghost,muertoghost1,muertoghost2,muertoghost3,muertoghost4: STD_LOGIC;
+    signal writeComeCocos,writeGhost1,writeGhost2,writeGhost3,writeGhost4,write : STD_LOGIC_VECTOR(0 DOWNTO 0);
+    signal addraIn,addrbIn,addraInCC,addraInG1,addraInG2,addraInG3,addraInG4: STD_LOGIC_VECTOR(8 DOWNTO 0);
+    signal dataIn,datbIn,dataInCC,dataInG1,dataInG2,dataInG3,dataInG4:STD_LOGIC_VECTOR(2 DOWNTO 0);
+    signal dataOut,datbOut,dataReset:STD_LOGIC_VECTOR(2 DOWNTO 0);
+    signal udlr,udlr_ghost1,udlr_ghost2,udlr_ghost3,udlr_ghost4:STD_LOGIC_VECTOR(3 DOWNTO 0);
+    signal random1,random2,random3,random4 : STD_LOGIC_VECTOR(4 DOWNTO 0);
+    signal ejx,ejy :STD_LOGIC_VECTOR(9 DOWNTO 0);
+    signal RGBaux,RGBOutaux, aux_douta_muro, aux_douta_bolita, aux_douta_cc,aux_douta_cc2, aux_douta_fant_r :STD_LOGIC_VECTOR(11 DOWNTO 0);
+    signal aux_addra_muro, aux_addra_bolita, aux_addra_cc,aux_addra_cc2, aux_addra_fant_r : std_logic_vector (7 downto 0);
 
 
-component blk_mem_gen_0 is
-    PORT (
-        clka : IN STD_LOGIC;
-        ena : IN STD_LOGIC;
-        wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-        addra : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dina : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
-        douta : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-        clkb : IN STD_LOGIC;
-        enb : IN STD_LOGIC;
-        web : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-        addrb : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dinb : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
-        doutb : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
-    );
-end component;
-component blk_mem_gen_1 IS
-  PORT (
-    clka : IN STD_LOGIC;
-    addra : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
-    douta : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
-  );
-end component;
-
-component PacMan_Sound is
-    Port (
-        CLK_IN    : in  STD_LOGIC;  -- Reloj 100 MHz
-        AUDIO_OUT : out STD_LOGIC   -- Salida de audio (onda cuadrada)
-    );
-end component;
-
-component muro is
-    port (
-        clka: in std_logic ;
-        addra: in std_logic_vector (7 downto 0);
-        douta : out std_logic_vector (11 downto 0));
-end component ;
-
-component bolita is
-    port (
-        clka: in std_logic ;
-        addra: in std_logic_vector (7 downto 0);
-        douta : out std_logic_vector (11 downto 0));
-end component ;
-
-component pacman_sprite is
-    port (
-        clka: in std_logic ;
-        addra: in std_logic_vector (7 downto 0);
-        douta : out std_logic_vector (11 downto 0));
-end component ;
-
-component pacman_sprite2 is
-    port (
-        clka: in std_logic ;
-        addra: in std_logic_vector (7 downto 0);
-        douta : out std_logic_vector (11 downto 0));
-end component ;
-
-component fantasma_r is
-    port (
-        clka: in std_logic ;
-        addra: in std_logic_vector (7 downto 0);
-        douta : out std_logic_vector (11 downto 0));
-end component ;
-
-component dibuja is
-    Port (
-        clk : in STD_LOGIC;
-        reset : in STD_LOGIC;
-        
-        eje_x : in STD_LOGIC_VECTOR (9 downto 0);
-        eje_y : in STD_LOGIC_VECTOR (9 downto 0);
-
-        codigo_color : in std_logic_vector (2 downto 0);
-        direccion : out STD_LOGIC_VECTOR (8 downto 0);
-        RGB : out STD_LOGIC_VECTOR (11 downto 0);
-        
-        data_muro : in std_logic_vector (11 downto 0);
-        dir_muro : out std_logic_vector (7 downto 0);
-        
-        data_bolita : in std_logic_vector (11 downto 0);
-        dir_bolita: out std_logic_vector (7 downto 0);
-        
-        data_cc : in std_logic_vector (11 downto 0);
-        dir_cc: out std_logic_vector (7 downto 0);
-        
-        data_cc2 : in std_logic_vector (11 downto 0);
-        dir_cc2: out std_logic_vector (7 downto 0);
-        
-        data_fant_r : in std_logic_vector (11 downto 0);
-        dir_fant_r: out std_logic_vector (7 downto 0));
-        
-end component;
-
-
-component VGA_DRIVER is
-    Port(
-        clk : in STD_LOGIC;
-        reset : in STD_LOGIC;
-        RGBin : in STD_LOGIC_VECTOR (11 downto 0);
-        VS : out STD_LOGIC;
-        HS : out STD_LOGIC;
-        refresh : out STD_LOGIC;
-        eje_x : out STD_LOGIC_VECTOR (9 downto 0);
-        eje_y : out STD_LOGIC_VECTOR (9 downto 0);
-        RGB : out STD_LOGIC_VECTOR (11 downto 0));
-end  component;
-
-component MaqPACMAN is
-    Port(
-        clk          : in STD_LOGIC;
-        reset        : in STD_LOGIC;
-        refresh      : in STD_LOGIC;
-        empieza      : in std_logic;
-        udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
-        addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
-        enableMem    : out STD_LOGIC;
-        done         : out STD_LOGIC;
-        muerte       : in STD_LOGIC;
-        write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
-    );
-end component;
-component Fantasma1 is
-    Port(
-        clk          : in STD_LOGIC;
-        reset        : in STD_LOGIC;
-        refresh      : in STD_LOGIC;
-        move         : in STD_LOGIC;
-        empieza      : in std_logic;
-        udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
-        addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
-        enableMem    : out STD_LOGIC;
-        done         : out STD_LOGIC;
-        killghost    : out STD_LOGIC;
-        write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
-    );
-end component;
-component fantasma2 is
-    Port(
-        clk          : in STD_LOGIC;
-        reset        : in STD_LOGIC;
-        refresh      : in STD_LOGIC;
-        move         : in STD_LOGIC;
-        empieza      : in std_logic;
-        udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
-        addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
-        enableMem    : out STD_LOGIC;
-        done         : out STD_LOGIC;
-        killghost    : out STD_LOGIC;
-        write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
-    );
-end component;
-component Fantasma3 is
-    Port(
-        clk          : in STD_LOGIC;
-        reset        : in STD_LOGIC;
-        refresh      : in STD_LOGIC;
-        move         : in STD_LOGIC;
-        empieza      : in std_logic;
-        udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
-        addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
-        enableMem    : out STD_LOGIC;
-        done         : out STD_LOGIC;
-        killghost    : out STD_LOGIC;
-        write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
-    );
-end component;
-component Fantasma4 is
-    Port(
-        clk          : in STD_LOGIC;
-        reset        : in STD_LOGIC;
-        refresh      : in STD_LOGIC;
-        move         : in STD_LOGIC;
-        empieza      : in std_logic;
-        udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
-        addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
-        enableMem    : out STD_LOGIC;
-        done         : out STD_LOGIC;
-        killghost    : out STD_LOGIC;
-        write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
-    );
-end component;
-component gestion_botones  is
-    Port (
-
-        clk : in std_logic;
-        reset : in std_logic;
-        up : in std_logic;
-        down : in std_logic;
-        left : in std_logic;
-        right : in std_logic;
-        move : out std_logic;
-        udlrcc : out std_logic_vector(3 downto 0)
-    );
-end component;
-
-component mov_fantasma is
-    Port (
-        clk :in std_logic;
-        random_number_in : in std_logic_vector (4 downto 0);
-        udlr_ghost : out std_logic_vector(3 downto 0)
-    );
-end component;
-
-
-component LFSR_Random_Generator is
-    Port ( clk               : in std_logic;               -- Reloj de entrada
-           refresh             : in std_logic;               -- Reset
-           seed                : in std_logic_vector(4 downto 0);
-           random_number_out : out std_logic_vector(4 downto 0)  -- Salida de 5 bits
-           );
-end component;
-
-component  Selector is
-    Port (
-        clk        : in  STD_LOGIC;
-        reset      : in  STD_LOGIC;
-        addraInCC  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
-        addraInG1  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
-        addraInG2  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
-        addraInG3  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
-        addraInG4  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dataCC     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dataG1     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dataG2     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dataG3     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dataG4     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dataReset  : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
-        writeCC    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
-        writeG1    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
-        writeG2    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
-        writeG3    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
-        writeG4    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
-        eje_x      : in  STD_LOGIC_VECTOR(9 DOWNTO 0);
-        eje_y      : in  STD_LOGIC_VECTOR(9 DOWNTO 0);
-        PACMAN     : in  STD_LOGIC;
-        GHOST1     : in  STD_LOGIC;
-        GHOST2     : in  STD_LOGIC;
-        GHOST3     : in  STD_LOGIC;
-        GHOST4     : in  STD_LOGIC;
-        ADDRESS    : out STD_LOGIC_VECTOR(8 DOWNTO 0);
-        DATA       : out STD_LOGIC_VECTOR(2 DOWNTO 0);
-        WRITE      : out STD_LOGIC_VECTOR(0 DOWNTO 0)
-    );
-end component;
-
-
-
- begin
- rom : blk_mem_gen_1 
-  port map(
-    clka => clk,
-    addra =>addraIn, 
-    douta => dataReset
-    );
-  
- sel : Selector
- port map
- (
- eje_x =>ejx,
- eje_y => ejy,
- reset => reset,
- dataReset =>dataReset,
-writeCC=>writeComeCocos,
-writeG1=>writeGhost1,
-writeG2=>writeGhost2,
-writeG3=>writeGhost3,
-writeG4=>writeGhost4,
- dataCC=>dataInCC,
- dataG1=>dataInG1,
- dataG2=>dataInG2,
- dataG3=>dataInG3,
- dataG4=>dataInG4,
- clk => clk,
- addraInCC =>addraInCC,
- addraInG1=>addraInG1,
- addraInG2=>addraInG2,
- addraInG3=>addraInG3,
- addraInG4=>addraInG4,
- PACMAN => enableComecocos,
- ghost1 => enableGhost1,
- ghost2 => enableGhost2,
- ghost3 => enableGhost3,
- ghost4 => enableGhost4,
- ADDRESS => addraIn,
- DATA =>dataIn,
- WRITE =>write
- );
- 
- sonidoPacman : PacMan_Sound
- port map(
-
- clk_IN => clk, AUDIO_OUT => AUDIO_OUT
- );
- 
- movF1 : mov_fantasma
- port map(
- clk => clk, random_number_in => random1, udlr_ghost=>udlr_ghost1
- );
-  movF2 : mov_fantasma
- port map(
- clk => clk, random_number_in => random2, udlr_ghost=>udlr_ghost2
- );
-  movF3 : mov_fantasma
- port map(
- clk => clk, random_number_in => random3, udlr_ghost=>udlr_ghost3
- );
-  movF4 : mov_fantasma
- port map(
- clk => clk, random_number_in => random4, udlr_ghost=>udlr_ghost4
- );
- 
- generadorF1 :LFSR_Random_Generator
- port map (
- clk => clk,
- refresh => refreshAux,
- seed => "10100",
- random_number_out => random1
- 
- );
- generadorF2 :LFSR_Random_Generator
- port map (
- clk => clk,
- refresh => refreshAux,
- seed => "10001",
- random_number_out => random2
- 
- );
- generadorF3 :LFSR_Random_Generator
- port map (
- clk => clk,
- refresh => refreshAux,
- seed => "11110",
- random_number_out => random3
- 
- );
-generadorF4 :LFSR_Random_Generator
- port map (
- clk => clk,
- refresh => refreshAux,
- seed => "10110",
- random_number_out => random4
- ); 
-botones : gestion_botones 
-    port map(
-    clk => clk,
-    reset => reset,
-    up => up,
-    down => down,
-    left => left,
-    right => right,
-    move => move,
-    udlrcc => udlr 
-    );
-    
-comecocos :  MaqPACMAN
-    port map
-    (
-        clk => clk,         
-        reset  => reset,      
-        refresh  => refreshAux,
-        empieza =>doneG4,         
-        udlrIn  => udlr,     
-        addressAOut  =>addraInCC,
-        dAIn     =>dataOut,    
-        dAOut       =>dataInCC, 
-        enableMem    =>enableComecocos,
-        done         =>doneCC,
-        write        => writeComeCocos,
-        muerte => muertoghost 
+    component blk_mem_gen_0 is
+        port (
+            clka : IN STD_LOGIC;
+            ena : IN STD_LOGIC;
+            wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+            addra : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
+            dina : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+            douta : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+            clkb : IN STD_LOGIC;
+            enb : IN STD_LOGIC;
+            web : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+            addrb : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
+            dinb : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+            doutb : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
         );
-    
-ghost1 :  Fantasma1
-    port map
-    (
-        empieza => doneCC,
-        clk => clk,         
-        reset  => reset,      
-        refresh  => refreshAux,    
-        move => move  ,      
-        udlrIn  => udlr_ghost1,     
-        addressAOut  =>addraInG1,
-        dAIn     =>dataOut,    
-        dAOut       =>dataInG1, 
-        enableMem    =>enableGhost1,
-        done         =>doneG1,
-        write        => writeGhost1,
-        killghost    => muertoghost1
+    end component;
+    component blk_mem_gen_1 IS
+        port (
+            clka : IN STD_LOGIC;
+            addra : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
+            douta : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
         );
-        ghost2 :  fantasma2
-    port map
-    (
-        empieza => doneG1,
-        clk => clk,         
-        reset  => reset,      
-        refresh  => refreshAux,    
-        move => move  ,      
-        udlrIn  => udlr_ghost2,     
-        addressAOut  =>addraInG2,
-        dAIn     =>dataOut,    
-        dAOut       =>dataInG2, 
-        enableMem    =>enableGhost2,
-        done         =>doneG2,
-        write        => writeGhost2,
-        killghost    => muertoghost2
+    end component;
+
+    component PacMan_Sound is
+        port (
+            CLK_IN    : in  STD_LOGIC;  -- Reloj 100 MHz
+            AUDIO_OUT : out STD_LOGIC   -- Salida de audio (onda cuadrada)
         );
-        ghost3 :  Fantasma3
-    port map
-    (
-        empieza => doneG2,
-        clk => clk,         
-        reset  => reset,      
-        refresh  => refreshAux,    
-        move => move  ,      
-        udlrIn  => udlr_ghost3,     
-        addressAOut  =>addraInG3,
-        dAIn     =>dataOut,    
-        dAOut       =>dataInG3, 
-        enableMem    =>enableGhost3,
-        done         =>doneG3,
-        write        => writeGhost3,
-        killghost    => muertoghost3
+    end component;
+
+    component muro is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
+    component bolita is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
+    component pacman_sprite is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
+    component pacman_sprite2 is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
+    component fantasma_r is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
+    component dibuja is
+        port (
+            clk : in STD_LOGIC;
+            reset : in STD_LOGIC;
+
+            eje_x : in STD_LOGIC_VECTOR (9 downto 0);
+            eje_y : in STD_LOGIC_VECTOR (9 downto 0);
+
+            codigo_color : in std_logic_vector (2 downto 0);
+            direccion : out STD_LOGIC_VECTOR (8 downto 0);
+            RGB : out STD_LOGIC_VECTOR (11 downto 0);
+
+            data_muro : in std_logic_vector (11 downto 0);
+            dir_muro : out std_logic_vector (7 downto 0);
+
+            data_bolita : in std_logic_vector (11 downto 0);
+            dir_bolita: out std_logic_vector (7 downto 0);
+
+            data_cc : in std_logic_vector (11 downto 0);
+            dir_cc: out std_logic_vector (7 downto 0);
+
+            data_cc2 : in std_logic_vector (11 downto 0);
+            dir_cc2: out std_logic_vector (7 downto 0);
+
+            data_fant_r : in std_logic_vector (11 downto 0);
+            dir_fant_r: out std_logic_vector (7 downto 0));
+
+    end component;
+
+    component VGA_DRIVER is
+        port(
+            clk : in STD_LOGIC;
+            reset : in STD_LOGIC;
+            RGBin : in STD_LOGIC_VECTOR (11 downto 0);
+            VS : out STD_LOGIC;
+            HS : out STD_LOGIC;
+            refresh : out STD_LOGIC;
+            eje_x : out STD_LOGIC_VECTOR (9 downto 0);
+            eje_y : out STD_LOGIC_VECTOR (9 downto 0);
+            RGB : out STD_LOGIC_VECTOR (11 downto 0));
+    end  component;
+
+    component MaqPACMAN is
+        port(
+            clk          : in STD_LOGIC;
+            reset        : in STD_LOGIC;
+            refresh      : in STD_LOGIC;
+            empieza      : in std_logic;
+            udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
+            addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+            dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
+            dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+            enableMem    : out STD_LOGIC;
+            done         : out STD_LOGIC;
+            muerte       : in STD_LOGIC;
+            write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
         );
-        ghost4 :  Fantasma4
-    port map
-    (
-        empieza => doneG3,
-        clk => clk,         
-        reset  => reset,      
-        refresh  => refreshAux,    
-        move => move  ,      
-        udlrIn  => udlr_ghost4,     
-        addressAOut  =>addraInG4,
-        dAIn     =>dataOut,    
-        dAOut       =>dataInG4, 
-        enableMem    =>enableGhost4,
-        done         =>doneG4,
-        write        => writeGhost4,
-        killghost    => muertoghost4
+    end component;
+
+    component Fantasma1 is
+        port(
+            clk          : in STD_LOGIC;
+            reset        : in STD_LOGIC;
+            refresh      : in STD_LOGIC;
+            move         : in STD_LOGIC;
+            empieza      : in std_logic;
+            udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
+            addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+            dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
+            dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+            enableMem    : out STD_LOGIC;
+            done         : out STD_LOGIC;
+            killghost    : out STD_LOGIC;
+            write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
         );
-memoria :  blk_mem_gen_0 
-    port map(
-        ena =>'1',
-        wea =>write,
-        web=>"0",
-        addra =>addraIn,
-        dina=>dataIn,
-        douta=>dataOut,
-        enb=>'1',
-        clka => clk,
-        clkb =>clk,
-        addrb =>addrbIn,
-        dinb => (others =>'0'),
-        doutb =>datbOut  
-    );
-    
-murete : muro
-    port map(
-        clka =>clk,
-        addra => aux_addra_muro,
-        douta => aux_douta_muro
-    );    
-    
-boli : bolita
-    port map(
-        clka =>clk,
-        addra => aux_addra_bolita,
-        douta => aux_douta_bolita
-    );
+    end component;
 
-cc_sprite : pacman_sprite
-    port map(
-        clka =>clk,
-        addra => aux_addra_cc,
-        douta => aux_douta_cc
-    ); 
-    
-cc_sprite2 : pacman_sprite2
-    port map(
-        clka =>clk,
-        addra => aux_addra_cc2,
-        douta => aux_douta_cc2
-    ); 
+    component fantasma2 is
+        port(
+            clk          : in STD_LOGIC;
+            reset        : in STD_LOGIC;
+            refresh      : in STD_LOGIC;
+            move         : in STD_LOGIC;
+            empieza      : in std_logic;
+            udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
+            addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+            dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
+            dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+            enableMem    : out STD_LOGIC;
+            done         : out STD_LOGIC;
+            killghost    : out STD_LOGIC;
+            write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
+        );
+    end component;
 
-fant_r1 : fantasma_r
-    port map(
-        clka =>clk,
-        addra => aux_addra_fant_r,
-        douta => aux_douta_fant_r
-    );
+    component Fantasma3 is
+        port(
+            clk          : in STD_LOGIC;
+            reset        : in STD_LOGIC;
+            refresh      : in STD_LOGIC;
+            move         : in STD_LOGIC;
+            empieza      : in std_logic;
+            udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
+            addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+            dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
+            dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+            enableMem    : out STD_LOGIC;
+            done         : out STD_LOGIC;
+            killghost    : out STD_LOGIC;
+            write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
+        );
+    end component;
 
-pintor : dibuja
-  port map(
-           clk => clk,
-           reset => reset,
-           eje_x => ejx,
-           eje_y =>ejy,
-           
-           codigo_color => datbOut,
-           direccion => addrbIn,
-           
-          data_muro => aux_douta_muro,  
-          dir_muro => aux_addra_muro, 
-           
-          data_bolita => aux_douta_bolita,  
-          dir_bolita => aux_addra_bolita, 
-          
-          data_cc => aux_douta_cc ,
-          dir_cc => aux_addra_cc ,
+    component Fantasma4 is
+        port(
+            clk          : in STD_LOGIC;
+            reset        : in STD_LOGIC;
+            refresh      : in STD_LOGIC;
+            move         : in STD_LOGIC;
+            empieza      : in std_logic;
+            udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
+            addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+            dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
+            dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+            enableMem    : out STD_LOGIC;
+            done         : out STD_LOGIC;
+            killghost    : out STD_LOGIC;
+            write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
+        );
+    end component;
 
-          data_cc2 => aux_douta_cc2 ,
-          dir_cc2 => aux_addra_cc2 ,
-          
-          data_fant_r => aux_douta_fant_r  ,
-          dir_fant_r => aux_addra_fant_r  ,
-                     
-          RGB => RGBaux
-    );
- driver: VGA_DRIVER
-   port map(
-     clk => clk, 
-     reset=> '0', 
-     RGBin=> RGBaux,
-     VS =>VS, 
-     HS =>HS,  
-     eje_x =>ejx,
-     eje_y =>ejy, 
-     RGB =>RGBOutaux,
-     refresh => refreshAux
-    );
- RGB<=RGBOutaux;
- muertoghost <= muertoghost1 OR muertoghost2 OR muertoghost3 OR muertoghost4;
+    component gestion_botones  is
+        port (
+
+            clk : in std_logic;
+            reset : in std_logic;
+            up : in std_logic;
+            down : in std_logic;
+            left : in std_logic;
+            right : in std_logic;
+            move : out std_logic;
+            udlrcc : out std_logic_vector(3 downto 0)
+        );
+    end component;
+
+    component mov_fantasma is
+        port (
+            clk :in std_logic;
+            random_number_in : in std_logic_vector (4 downto 0);
+            udlr_ghost : out std_logic_vector(3 downto 0)
+        );
+    end component;
+
+    component LFSR_Random_Generator is
+        port ( clk               : in std_logic;               -- Reloj de entrada
+             refresh             : in std_logic;               -- Reset
+             seed                : in std_logic_vector(4 downto 0);
+             random_number_out : out std_logic_vector(4 downto 0)  -- Salida de 5 bits
+            );
+    end component;
+
+    component  Selector is
+        port (
+            clk        : in  STD_LOGIC;
+            reset      : in  STD_LOGIC;
+
+            addraInCC  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
+            addraInG1  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
+            addraInG2  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
+            addraInG3  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
+            addraInG4  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
+
+            dataCC     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
+            dataG1     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
+            dataG2     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
+            dataG3     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
+            dataG4     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
+            dataReset  : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
+
+            writeCC    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
+            writeG1    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
+            writeG2    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
+            writeG3    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
+            writeG4    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
+
+            eje_x      : in  STD_LOGIC_VECTOR(9 DOWNTO 0);
+            eje_y      : in  STD_LOGIC_VECTOR(9 DOWNTO 0);
+
+            PACMAN     : in  STD_LOGIC;
+
+            GHOST1     : in  STD_LOGIC;
+            GHOST2     : in  STD_LOGIC;
+            GHOST3     : in  STD_LOGIC;
+            GHOST4     : in  STD_LOGIC;
+
+            ADDRESS    : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+            DATA       : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+            WRITE      : out STD_LOGIC_VECTOR(0 DOWNTO 0)
+        );
+    end component;
+
+begin
+    rom : blk_mem_gen_1
+        port map(
+            clka => clk,
+            addra =>addraIn,
+            douta => dataReset
+        );
+
+    sel : Selector
+        port map
+(
+            eje_x =>ejx,
+            eje_y => ejy,
+            reset => reset,
+            dataReset =>dataReset,
+
+            writeCC=>writeComeCocos,
+            writeG1=>writeGhost1,
+            writeG2=>writeGhost2,
+            writeG3=>writeGhost3,
+            writeG4=>writeGhost4,
+
+            dataCC=>dataInCC,
+            dataG1=>dataInG1,
+            dataG2=>dataInG2,
+            dataG3=>dataInG3,
+            dataG4=>dataInG4,
+
+            clk => clk,
+
+            addraInCC =>addraInCC,
+            addraInG1=>addraInG1,
+            addraInG2=>addraInG2,
+            addraInG3=>addraInG3,
+            addraInG4=>addraInG4,
+
+            PACMAN => enableComecocos,
+            ghost1 => enableGhost1,
+            ghost2 => enableGhost2,
+            ghost3 => enableGhost3,
+            ghost4 => enableGhost4,
+
+            ADDRESS => addraIn,
+            DATA =>dataIn,
+            WRITE =>write
+        );
+
+    sonidoPacman : PacMan_Sound
+        port map(
+            clk_IN => clk, AUDIO_OUT => AUDIO_OUT
+        );
+
+    movF1 : mov_fantasma
+        port map(
+            clk => clk, random_number_in => random1, udlr_ghost=>udlr_ghost1
+        );
+
+    movF2 : mov_fantasma
+        port map(
+            clk => clk, random_number_in => random2, udlr_ghost=>udlr_ghost2
+        );
+
+    movF3 : mov_fantasma
+        port map(
+            clk => clk, random_number_in => random3, udlr_ghost=>udlr_ghost3
+        );
+
+    movF4 : mov_fantasma
+        port map(
+            clk => clk, random_number_in => random4, udlr_ghost=>udlr_ghost4
+        );
+
+    generadorF1 :LFSR_Random_Generator
+        port map (
+            clk => clk,
+            refresh => refreshAux,
+            seed => "10100",
+            random_number_out => random1
+        );
+
+    generadorF2 :LFSR_Random_Generator
+        port map (
+            clk => clk,
+            refresh => refreshAux,
+            seed => "10001",
+            random_number_out => random2
+        );
+
+    generadorF3 :LFSR_Random_Generator
+        port map (
+            clk => clk,
+            refresh => refreshAux,
+            seed => "11110",
+            random_number_out => random3
+        );
+
+    generadorF4 :LFSR_Random_Generator
+        port map (
+            clk => clk,
+            refresh => refreshAux,
+            seed => "10110",
+            random_number_out => random4
+        );
+
+    botones : gestion_botones
+        port map(
+            clk => clk,
+            reset => reset,
+            up => up,
+            down => down,
+            left => left,
+            right => right,
+            move => move,
+            udlrcc => udlr
+        );
+
+    comecocos :  MaqPACMAN
+        port map(
+            clk => clk,
+            reset  => reset,
+            refresh  => refreshAux,
+            empieza =>doneG4,
+            udlrIn  => udlr,
+            addressAOut  =>addraInCC,
+            dAIn     =>dataOut,
+            dAOut       =>dataInCC,
+            enableMem    =>enableComecocos,
+            done         =>doneCC,
+            write        => writeComeCocos,
+            muerte => muertoghost
+        );
+
+    ghost1 :  Fantasma1
+        port map(
+            empieza => doneCC,
+            clk => clk,
+            reset  => reset,
+            refresh  => refreshAux,
+            move => move  ,
+            udlrIn  => udlr_ghost1,
+            addressAOut  =>addraInG1,
+            dAIn     =>dataOut,
+            dAOut       =>dataInG1,
+            enableMem    =>enableGhost1,
+            done         =>doneG1,
+            write        => writeGhost1,
+            killghost    => muertoghost1
+        );
+
+    ghost2 :  fantasma2
+        port map(
+            empieza => doneG1,
+            clk => clk,
+            reset  => reset,
+            refresh  => refreshAux,
+            move => move  ,
+            udlrIn  => udlr_ghost2,
+            addressAOut  =>addraInG2,
+            dAIn     =>dataOut,
+            dAOut       =>dataInG2,
+            enableMem    =>enableGhost2,
+            done         =>doneG2,
+            write        => writeGhost2,
+            killghost    => muertoghost2
+        );
+
+    ghost3 :  Fantasma3
+        port map(
+            empieza => doneG2,
+            clk => clk,
+            reset  => reset,
+            refresh  => refreshAux,
+            move => move  ,
+            udlrIn  => udlr_ghost3,
+            addressAOut  =>addraInG3,
+            dAIn     =>dataOut,
+            dAOut       =>dataInG3,
+            enableMem    =>enableGhost3,
+            done         =>doneG3,
+            write        => writeGhost3,
+            killghost    => muertoghost3
+        );
+
+    ghost4 :  Fantasma4
+        port map(
+            empieza => doneG3,
+            clk => clk,
+            reset  => reset,
+            refresh  => refreshAux,
+            move => move  ,
+            udlrIn  => udlr_ghost4,
+            addressAOut  =>addraInG4,
+            dAIn     =>dataOut,
+            dAOut       =>dataInG4,
+            enableMem    =>enableGhost4,
+            done         =>doneG4,
+            write        => writeGhost4,
+            killghost    => muertoghost4
+        );
+
+    memoria :  blk_mem_gen_0
+        port map(
+            ena =>'1',
+            wea =>write,
+            web=>"0",
+            addra =>addraIn,
+            dina=>dataIn,
+            douta=>dataOut,
+            enb=>'1',
+            clka => clk,
+            clkb =>clk,
+            addrb =>addrbIn,
+            dinb => (others =>'0'),
+            doutb =>datbOut
+        );
+
+    murete : muro
+        port map(
+            clka =>clk,
+            addra => aux_addra_muro,
+            douta => aux_douta_muro
+        );
+
+    boli : bolita
+        port map(
+            clka =>clk,
+            addra => aux_addra_bolita,
+            douta => aux_douta_bolita
+        );
+
+    cc_sprite : pacman_sprite
+        port map(
+            clka =>clk,
+            addra => aux_addra_cc,
+            douta => aux_douta_cc
+        );
+
+    cc_sprite2 : pacman_sprite2
+        port map(
+            clka =>clk,
+            addra => aux_addra_cc2,
+            douta => aux_douta_cc2
+        );
+
+    fant_r1 : fantasma_r
+        port map(
+            clka =>clk,
+            addra => aux_addra_fant_r,
+            douta => aux_douta_fant_r
+        );
+
+    pintor : dibuja
+        port map(
+            clk => clk,
+            reset => reset,
+            eje_x => ejx,
+            eje_y =>ejy,
+
+            codigo_color => datbOut,
+            direccion => addrbIn,
+
+            data_muro => aux_douta_muro,
+            dir_muro => aux_addra_muro,
+
+            data_bolita => aux_douta_bolita,
+            dir_bolita => aux_addra_bolita,
+
+            data_cc => aux_douta_cc ,
+            dir_cc => aux_addra_cc ,
+
+            data_cc2 => aux_douta_cc2 ,
+            dir_cc2 => aux_addra_cc2 ,
+
+            data_fant_r => aux_douta_fant_r  ,
+            dir_fant_r => aux_addra_fant_r  ,
+
+            RGB => RGBaux
+        );
+
+    driver: VGA_DRIVER
+        port map(
+            clk => clk,
+            reset=> '0',
+            RGBin=> RGBaux,
+            VS =>VS,
+            HS =>HS,
+            eje_x =>ejx,
+            eje_y =>ejy,
+            RGB =>RGBOutaux,
+            refresh => refreshAux
+        );
+    RGB<=RGBOutaux;
+    muertoghost <= muertoghost1 OR muertoghost2 OR muertoghost3 OR muertoghost4;
 end Behavioral;
