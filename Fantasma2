@@ -76,7 +76,7 @@ begin
     end if;
 end process;
 
-comb: process(estado, refresh,done_reg, empieza, move,p_last_udlr,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, p_posy, posx,posx_ant,posy_ant, posy,ciclos)
+comb: process(estado, refresh,done_reg, empieza, move,p_last_udlr,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, p_posy, posx,posx_ant,posy_ant, posy,ciclos,hayBola, enableMemoria)
 begin
     -- Default outputs
     p_last_udlr <= last_udlr; --Mantiene el valor del anterior
@@ -107,7 +107,7 @@ begin
             p_write <= "1";
             p_udlr <= udlrIn;
             p_estado <= espera;
-            done_reg <= '1';
+            done_reg <= '0';
         end if;
     when espera =>
         p_enableMemoria<='0';
