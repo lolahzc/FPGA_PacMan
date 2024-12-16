@@ -37,8 +37,9 @@ architecture Behavioral of LFSR_Random_Generator is
     signal cont3,p_cont3: std_logic_vector(6 downto 0):= "0000000";
 begin
     -- Proceso que genera los números pseudoaleatorios en cada flanco de subida del reloj
-    process(clk,cont,seed)
+    process(clk,cont,seed, Aux, cont3)
     begin
+    
     lfsr <= seed;
         if cont = 500 then
             -- Si se activa el refresh, se carga la semilla inicial
@@ -62,11 +63,12 @@ begin
             lfsr <= p_lfsr;
             cont <= p_cont;
             cont3 <= p_cont3;
+            Aux <= Aux; -- -- COMPROBAR SI AL QUITAR EL LATCH CON ESTO SIGUE FUNCIONANDO
 
         end if;
     end process;
 
-    comb :process(lfsr,cont,refresh)
+    comb :process(lfsr,cont,refresh, cont3)
     begin
         p_cont<= cont;
         p_cont3 <= cont3;
