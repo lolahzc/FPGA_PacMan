@@ -77,7 +77,7 @@ begin
         end if;
     end process;
 
-    comb: process(estado, muerte, refresh, empieza, p_last_udlr,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, done_reg, p_posy, posx,posx_ant,posy_ant, posy,ciclos,contVidas, choque)
+    comb: process(estado, muerte, refresh, empieza, p_last_udlr,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, done_reg, p_posy, posx,posx_ant,posy_ant, posy,ciclos,contVidas, choque, enableMemoria, gameOver)
     begin
         -- Default outputs
 
