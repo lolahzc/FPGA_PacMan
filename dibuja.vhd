@@ -40,6 +40,7 @@ begin
         if reset = '1' then
             cuenta_pacman <= (others => '0');
             pacman_sprite <= '0';
+          
         elsif rising_edge(clk) then
             if unsigned(cuenta_pacman) = 49999999 then -- Cambio cada 1 segundo (50 MHz)
                 pacman_sprite <= not pacman_sprite; -- Alterna entre sprite 0 y 1
@@ -51,8 +52,14 @@ begin
     end process;
 
     -- Proceso principal para dibujar los elementos en pantalla
-    dibuja: process(eje_x, eje_y, codigo_color, data_muro, data_bolita, data_cc, data_cc2, data_fant_r)
+    dibuja: process(eje_x, eje_y, codigo_color, data_muro, data_bolita, data_cc, data_cc2, pacman_sprite, data_fant_r)
     begin
+        dir_muro <= (others => '1'); -- COMPROBAR SI AL QUITAR EL LATCH CON ESTO SIGUE FUNCIONANDO
+        dir_bolita <= (others => '1');
+        dir_cc <= (others => '1');
+        dir_cc2 <= (others => '1');
+        dir_fant_r <= (others => '1');
+        
         if (unsigned(eje_x) > 0 and unsigned(eje_x) < 512 and unsigned(eje_y) > 0 and unsigned(eje_y) < 256) then
             case codigo_color is
                 when "000" => -- Vacío -> negro
