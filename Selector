@@ -30,12 +30,12 @@ entity Selector is
         addraInG2  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
         addraInG3  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
         addraInG4  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dataCC     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dataG1     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dataG2     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dataG3     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dataG4     : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dataReset  : in  STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dataCC     : in  STD_LOGIC_VECTOR(3 DOWNTO 0);
+        dataG1     : in  STD_LOGIC_VECTOR(3 DOWNTO 0);
+        dataG2     : in  STD_LOGIC_VECTOR(3 DOWNTO 0);
+        dataG3     : in  STD_LOGIC_VECTOR(3 DOWNTO 0);
+        dataG4     : in  STD_LOGIC_VECTOR(3 DOWNTO 0);
+        dataReset  : in  STD_LOGIC_VECTOR(3 DOWNTO 0);
         writeCC    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
         writeG1    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
         writeG2    : in  STD_LOGIC_VECTOR(0 DOWNTO 0);
@@ -49,7 +49,7 @@ entity Selector is
         GHOST3     : in  STD_LOGIC;
         GHOST4     : in  STD_LOGIC;
         ADDRESS    : out STD_LOGIC_VECTOR(8 DOWNTO 0);
-        DATA       : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+        DATA       : out STD_LOGIC_VECTOR(3 DOWNTO 0);
         WRITE      : out STD_LOGIC_VECTOR(0 DOWNTO 0)
     );
 end Selector;
@@ -57,7 +57,7 @@ end Selector;
 architecture Behavioral of Selector is
     type estados is (normal, reseteo);
     signal p_address : STD_LOGIC_VECTOR(8 DOWNTO 0) := (others => '0');
-    signal p_data    : STD_LOGIC_VECTOR(2 DOWNTO 0) := (others => '0');
+    signal p_data    : STD_LOGIC_VECTOR(3 DOWNTO 0) := (others => '0');
     signal p_write   : STD_LOGIC_VECTOR(0 DOWNTO 0) := (others => '0');
     signal fila      : STD_LOGIC_VECTOR(3 DOWNTO 0) := (others => '0');
     signal columna   : STD_LOGIC_VECTOR(4 DOWNTO 0) := (others => '0');
