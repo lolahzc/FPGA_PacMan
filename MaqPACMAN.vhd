@@ -11,8 +11,8 @@ entity MaqPACMAN is
         muerte       : in STD_LOGIC;
         udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
         addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dAIn         : in STD_LOGIC_VECTOR(3 DOWNTO 0);
+        dAOut        : out STD_LOGIC_VECTOR(3 DOWNTO 0);
         enableMem    : out STD_LOGIC;
         done         : out STD_LOGIC;
         puntosOut       : out STD_LOGIC_VECTOR(6 downto 0);
@@ -28,7 +28,7 @@ architecture Behavioral of MaqPACMAN is
     signal p_address, last_address : std_logic_vector(8 downto 0);
     signal posx, p_posx, posx_ant, p_posx_ant : std_logic_vector(3 downto 0) :=("0001");
     signal posy, p_posy, posy_ant, p_posy_ant : std_logic_vector(4 downto 0):=("00001");
-    signal p_Dout : std_logic_vector(2 downto 0);
+    signal p_Dout : std_logic_vector(3 downto 0);
     signal last_udlr, p_last_udlr,udlr,p_udlr : std_logic_vector(3 downto 0);
     signal hayMuro ,p_hayMuro,p_kill,choque,p_choque : std_logic;
     signal p_write : std_logic_vector(0 downto 0);
@@ -57,7 +57,7 @@ begin
             puntos <= (others => '0');
             gameOver <= '0';
             addressAOut <=(others => '0');
-            dAOut <= "001";
+            dAOut <= "0001";
             hayMuro <= '0';
             choque <='0';
             write <="0";
@@ -97,7 +97,7 @@ begin
         p_udlr <= udlr; --Mantiene el valor del anterior
         p_ciclo <= "00000"; --Resetea el ciclo
         p_contVidas <= contVidas;
-        p_Dout <= "000"; --Pone vacío por defecto
+        p_Dout <= "0000"; --Pone vacío por defecto
         p_write <= "0"; --Por defecto no escribe
         p_estado <= estado; --Se manteine en el mismo estado
         p_address <= p_posx & p_posy; --Actualiza la posición
@@ -119,7 +119,7 @@ begin
                 else
                     p_posx <= "0001";  -- Initial X position
                     p_posy <= "00001"; -- Initial Y position
-                    p_Dout <= "011";   -- Draw Pac-Man
+                    p_Dout <= "0011";   -- Draw Pac-Man
                     p_address <= p_posx & p_posy;
                     p_write <= "1";
                     p_udlr <= udlrIn;
@@ -157,7 +157,7 @@ begin
                 p_posy_ant <= posy;
                 p_write <= "1";
                 p_puntos <= puntos;
-                p_Dout <= "000";
+                p_Dout <= "0000";
                 p_address <= posx_ant & posy_ant;
                 p_ciclo <= ciclos +1;
 
@@ -190,7 +190,7 @@ begin
 
             when movimiento =>
                 p_address <= posx_ant & posy_ant;
-                p_Dout <= "000";
+                p_Dout <= "0000";
                 p_write <= "1";
                 p_estado <= comprueboDireccion;
 
@@ -209,12 +209,12 @@ begin
                 p_write <= "1";
                 p_estado <= pintaPacman;
                 p_address <= p_posx & p_posy;
-                if(daIn ="010") then --Si hay bola
+                if(daIn ="0010") then --Si hay bola
                  p_puntoEnable <= '1';
                 p_puntos <= puntos +1;
                 
                 end if;
-                if(dAIn = "001") then --Si hay muro. 
+                if(dAIn = "0001") then --Si hay muro. 
                     --Primero he puesto un cero, si hay un muro se escribe arriba y vuelve a movimiento
                     if(last_udlr /= udlr) then --Si hay muro, me quedo en la posición en la que estaba para no comerme el muro
                         p_posx <= posx_ant;
@@ -235,7 +235,7 @@ begin
                     end if;
                 --Esto pinta el pacman en la posición anterior
 
-                elsif(dAIn = "100" or dAIn = "110" or dAIn = "101" or dAIn = "111") then
+                elsif(dAIn = "0100" or dAIn = "0110" or dAIn = "0101" or dAIn = "0111") then
                     p_hayMuro<='0';
                     p_choque <='1';
                     p_estado <= espera;
@@ -250,7 +250,7 @@ begin
             when pintaPacman => --Aquí pinto en la casilla siguiente o en la anterior en función de confirmo dirección
                 p_address <= p_posx & p_posy;
                 p_ciclo <= ciclos;
-                p_Dout <= "011";
+                p_Dout <= "0011";
                 p_write <= "1";
                 if refresh = '1' then
                     p_ciclo <= ciclos +1;
