@@ -13,8 +13,8 @@ entity Fantasma1 is
         empieza      : in STD_LOGIC;
         udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
         addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
-        dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
-        dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dAIn         : in STD_LOGIC_VECTOR(3 DOWNTO 0);
+        dAOut        : out STD_LOGIC_VECTOR(3 DOWNTO 0);
         enableMem    : out STD_LOGIC;
         done         : out STD_LOGIC;
         killghost    : out STD_LOGIC;
@@ -28,7 +28,7 @@ architecture Behavioral of Fantasma1 is
     signal p_address, last_address : std_logic_vector(8 downto 0);
     signal posx, p_posx, posx_ant, p_posx_ant : std_logic_vector(3 downto 0) :=("0001");
     signal posy, p_posy, posy_ant, p_posy_ant : std_logic_vector(4 downto 0):=("00001");
-    signal p_Dout                 : std_logic_vector(2 downto 0);
+    signal p_Dout                 : std_logic_vector(3 downto 0);
     signal last_udlr, p_last_udlr,udlr,p_udlr : std_logic_vector(3 downto 0);
     signal hayMuro ,p_hayMuro,hayBola,p_hayBola,p_kill           : std_logic; -- Signal indicating if PacMan is in motion
     signal p_write                : std_logic_vector(0 downto 0);
@@ -51,7 +51,7 @@ begin
         ciclos <= "00000";
         killghost <='0';
         addressAOut <=(others => '0');
-        dAOut <= "000";
+        dAOut <= "0000";
         hayMuro <= '0';
         write <="0";
         udlr <= (others => '0');
@@ -83,7 +83,7 @@ begin
     p_kill <= '0';
     p_udlr <= udlr; --Mantiene el valor del anterior
     p_ciclo <= "00000"; --Resetea el ciclo
-    p_Dout <= "000"; --Pone vacío por defecto
+    p_Dout <= "0000"; --Pone vacío por defecto
     p_write <= "0"; --Por defecto no escribe
     p_estado <= estado; --Se manteine en el mismo estado
     p_address <= p_posx & p_posy; --Actualiza la posición
@@ -100,7 +100,7 @@ begin
     when reposo =>
         p_posx <= "1110";  -- Initial X position
         p_posy <= "11110"; -- Initial Y position
-        p_Dout <= "100";
+        p_Dout <= "0100";
         if move = '1' then
             -- Draw Pac-Man
             p_address <= p_posx & p_posy;
@@ -127,14 +127,14 @@ begin
         p_write <= "0";
         if(hayBola = '1') then
         if(ciclos >2) then
-            p_Dout <= "010";
+            p_Dout <= "0010";
             else 
             p_estado <= estado;
             end if;
         else
          if(ciclos >2) then
          p_write <= "1";
-            p_Dout<= "000";
+            p_Dout<= "0000";
              
             else 
             p_estado <= estado;
@@ -175,10 +175,10 @@ begin
                     p_write <= "1";
                     p_estado <= comprueboDireccion;
                      if(hayBola = '1') then
-                      p_Dout <= "010";
+                      p_Dout <= "0010";
 
                       else
-           p_Dout <= "000";
+           p_Dout <= "0000";
            end if;
             when comprueboDireccion =>
                 p_write <= "0";
@@ -195,7 +195,7 @@ begin
                 p_write <= "0";
                 p_estado <= pintaPacman;
                 p_address <= p_posx & p_posy;
-                if(dAIn = "001") then --Si hay muro. 
+                if(dAIn = "0001") then --Si hay muro. 
                     p_hayBola<=hayBola;--Primero he puesto un cero, si hay un muro se escribe arriba y vuelve a movimiento
                     if(last_udlr /= udlr) then --Veo si  puedo ir en la dirección anterior
                         p_posx <= posx_ant;
@@ -211,17 +211,17 @@ begin
                     end if;
                 --Esto pinta el pacman en la posición anterior
                 
-                elsif(dAIn = "010" or (dAIn/="010" and hayBola ='1')) then--Hay bolas o la ultima fue bola
-                    if(dAIn = "010") then
+                elsif(dAIn = "0010" or (dAIn/="0010" and hayBola ='1')) then--Hay bolas o la ultima fue bola
+                    if(dAIn = "0010") then
                     p_hayBola<='1';
                     p_hayMuro<='0';
                     p_last_udlr <= udlr;
-                    elsif(dAIn/="010" and hayBola ='1') then
+                    elsif(dAIn/="0010" and hayBola ='1') then
                     p_hayBola<='0';
                     p_hayMuro<='0';
                     p_last_udlr <= udlr;
                     p_write <="1";
-                    p_Dout <= "010";
+                    p_Dout <= "0010";
                     p_address <= posx_ant & posy_ant;
                     else
                     p_hayMuro<='0';
@@ -229,7 +229,7 @@ begin
                     p_last_udlr <= udlr;
                     end if;
                     end if;
-                if(dAIn = "011") then               
+                if(dAIn = "0011") then               
                     p_hayMuro<='0';
                     p_last_udlr <= udlr;
                     p_kill <= '1';
@@ -242,7 +242,7 @@ begin
            when pintaPacman => --Aquí pinto en la casilla siguiente o en la anterior en función de confirmo dirección
                 p_address <= p_posx & p_posy;
                 p_ciclo <= ciclos;
-                p_Dout <= "100";
+                p_Dout <= "0100";
                 p_write <= "1";
                     p_ciclo <= ciclos +1;
                    p_enableMemoria<='1';
