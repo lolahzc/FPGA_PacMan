@@ -55,29 +55,31 @@ entity Selector is
 end Selector;
 
 architecture Behavioral of Selector is
+    type estados is (normal, reseteo);
     signal p_address : STD_LOGIC_VECTOR(8 DOWNTO 0) := (others => '0');
     signal p_data    : STD_LOGIC_VECTOR(2 DOWNTO 0) := (others => '0');
     signal p_write   : STD_LOGIC_VECTOR(0 DOWNTO 0) := (others => '0');
     signal fila      : STD_LOGIC_VECTOR(3 DOWNTO 0) := (others => '0');
     signal columna   : STD_LOGIC_VECTOR(4 DOWNTO 0) := (others => '0');
+    signal estado, p_estado : estados; 
 begin
 
     -- Cálculo de fila y columna
     fila    <= eje_y(7 DOWNTO 4);
     columna <= eje_x(4 DOWNTO 0);
 
-    reseteo: process(reset, fila, columna, PACMAN, GHOST1, GHOST2, GHOST3, GHOST4,
+    resetear: process(clk,reset, fila, columna, PACMAN, GHOST1, GHOST2, GHOST3, GHOST4,
                      addraInCC, addraInG1, addraInG2, addraInG3, addraInG4,
                      dataCC, dataG1, dataG2, dataG3, dataG4, dataReset,
                      writeCC, writeG1, writeG2, writeG3, writeG4)
     begin
-        if (reset = '1') then
-            p_data    <= dataReset;
-            p_address <= fila & columna;
-            p_write   <= "1";
-        else
-            -- Determina quién está activo y asigna en consecuencia
-            if (PACMAN = '1') then
+    if(rising_edge(clk)) then
+    estado <= p_estado;
+    end if;
+    p_estado <= normal;
+    case estado is
+        when normal =>
+         if (PACMAN = '1') then
                 p_address <= addraInCC;
                 p_data    <= dataCC;
                 p_write   <= writeCC;
@@ -102,7 +104,24 @@ begin
                 p_data    <= (others => '0');
                 p_write   <= (others => '0');
             end if;
-        end if;
+            if(reset ='1') then
+            
+            p_estado <= reseteo;
+            end if;
+        
+        when reseteo =>
+            p_data    <= dataReset;
+            p_address <= fila & columna;
+            p_write   <= "1";
+            p_estado <= estado;
+            if(columna = "11111" AND fila = "1111") then
+            P_estado <= normal;
+            
+            end if;
+            
+        end case;
+            -- Determina quién está activo y asigna en consecuencia
+           
     end process;
 
     ADDRESS <= p_address;
