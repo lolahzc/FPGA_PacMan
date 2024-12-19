@@ -31,13 +31,15 @@ entity Top is
         RGB:out std_logic_vector(11 downto 0);
         HS: out std_logic;
         AUDIO_OUT: out std_logic;
-        VS: out std_logic
+        VS: out std_logic;
+         A : out STD_LOGIC; B : out STD_LOGIC; C : out STD_LOGIC; D : out STD_LOGIC; E : out STD_LOGIC; F : out STD_LOGIC; G : out STD_LOGIC; DP : out STD_LOGIC; 
+        AN : out STD_LOGIC_VECTOR (3 downto 0)
     );
 end Top;
 
 architecture Behavioral of Top is
 
-    signal refreshAux,move,enableComecocos,enableGhost1,enableGhost2,enableGhost3,enableGhost4, doneCC,doneG1,doneG2,doneG3,doneG4, muertoghost,muertoghost1,muertoghost2,muertoghost3,muertoghost4: STD_LOGIC;
+    signal refreshAux,move,enableComecocos,enableGhost1,enableGhost2,enableGhost3,enableGhost4, doneCC,doneG1,doneG2,doneG3,doneG4, muertoghost,muertoghost1,muertoghost2,muertoghost3,muertoghost4,puntosEnable: STD_LOGIC;
     signal writeComeCocos,writeGhost1,writeGhost2,writeGhost3,writeGhost4,write : STD_LOGIC_VECTOR(0 DOWNTO 0);
     signal addraIn,addrbIn,addraInCC,addraInG1,addraInG2,addraInG3,addraInG4: STD_LOGIC_VECTOR(8 DOWNTO 0);
     signal dataIn,datbIn,dataInCC,dataInG1,dataInG2,dataInG3,dataInG4:STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -45,9 +47,26 @@ architecture Behavioral of Top is
     signal udlr,udlr_ghost1,udlr_ghost2,udlr_ghost3,udlr_ghost4:STD_LOGIC_VECTOR(3 DOWNTO 0);
     signal random1,random2,random3,random4 : STD_LOGIC_VECTOR(4 DOWNTO 0);
     signal ejx,ejy :STD_LOGIC_VECTOR(9 DOWNTO 0);
-    signal RGBaux,RGBOutaux, aux_douta_muro, aux_douta_bolita, aux_douta_cc,aux_douta_cc2, aux_douta_fant_r :STD_LOGIC_VECTOR(11 DOWNTO 0);
-    signal aux_addra_muro, aux_addra_bolita, aux_addra_cc,aux_addra_cc2, aux_addra_fant_r : std_logic_vector (7 downto 0);
+    signal puntos : std_logic_vector(6 downto 0);
+    signal RGBaux,RGBOutaux, aux_douta_muro, aux_douta_bolita :STD_LOGIC_VECTOR(11 DOWNTO 0);
+    signal aux_addra_muro, aux_addra_bolita : std_logic_vector (7 downto 0);
 
+    -- Señales auxiliares sprites del comecocos
+    signal aux_addra_cc_abi_der, aux_addra_cc_abi_izq, aux_addra_cc_abi_arr, aux_addra_cc_abi_aba: std_logic_vector (7 downto 0);
+    signal aux_douta_cc_abi_der, aux_douta_cc_abi_izq, aux_douta_cc_abi_arr, aux_douta_cc_abi_aba: std_logic_vector (11 downto 0);
+    signal aux_addra_cc_cer_der, aux_addra_cc_cer_izq, aux_addra_cc_cer_arr, aux_addra_cc_cer_aba: std_logic_vector (7 downto 0);
+    signal aux_douta_cc_cer_der, aux_douta_cc_cer_izq, aux_douta_cc_cer_arr, aux_douta_cc_cer_aba: std_logic_vector (11 downto 0);
+    signal aux_last_udlr_cc : std_logic_vector (3 downto 0);
+
+    -- Señales auxiliares sprites de los fantasmas
+    signal aux_addra_fant_ver_der, aux_addra_fant_ver_izq, aux_addra_fant_ver_arr, aux_addra_fant_ver_aba : std_logic_vector (7 downto 0);
+    signal aux_douta_fant_ver_der, aux_douta_fant_ver_izq, aux_douta_fant_ver_arr, aux_douta_fant_ver_aba : std_logic_vector (11 downto 0);
+    signal aux_addra_fant_azu_der, aux_addra_fant_azu_izq, aux_addra_fant_azu_arr, aux_addra_fant_azu_aba : std_logic_vector (7 downto 0);
+    signal aux_douta_fant_azu_der, aux_douta_fant_azu_izq, aux_douta_fant_azu_arr, aux_douta_fant_azu_aba : std_logic_vector (11 downto 0);
+    signal aux_addra_fant_mar_der, aux_addra_fant_mar_izq, aux_addra_fant_mar_arr, aux_addra_fant_mar_aba : std_logic_vector (7 downto 0);
+    signal aux_douta_fant_mar_der, aux_douta_fant_mar_izq, aux_douta_fant_mar_arr, aux_douta_fant_mar_aba : std_logic_vector (11 downto 0);
+    signal aux_addra_fant_roj_der, aux_addra_fant_roj_izq, aux_addra_fant_roj_arr, aux_addra_fant_roj_aba : std_logic_vector (7 downto 0);
+    signal aux_douta_fant_roj_der, aux_douta_fant_roj_izq, aux_douta_fant_roj_arr, aux_douta_fant_roj_aba : std_logic_vector (11 downto 0);
 
     component blk_mem_gen_0 is
         port (
@@ -79,7 +98,16 @@ architecture Behavioral of Top is
             AUDIO_OUT : out STD_LOGIC   -- Salida de audio (onda cuadrada)
         );
     end component;
-
+  component ControlDisplayp2 is
+Port ( 
+        clk : in STD_LOGIC;
+        reset : in STD_LOGIC;
+        enable: in STD_LOGIC;
+        vel : in std_logic_vector(1 downto 0);
+        updown : in std_logic;
+        A : out STD_LOGIC; B : out STD_LOGIC; C : out STD_LOGIC; D : out STD_LOGIC; E : out STD_LOGIC; F : out STD_LOGIC; G : out STD_LOGIC; DP : out STD_LOGIC; 
+        AN : out STD_LOGIC_VECTOR (3 downto 0));
+end component;
     component muro is
         port (
             clka: in std_logic ;
@@ -94,26 +122,166 @@ architecture Behavioral of Top is
             douta : out std_logic_vector (11 downto 0));
     end component ;
 
-    component pacman_sprite is
+    component cc_abi_der is
         port (
             clka: in std_logic ;
             addra: in std_logic_vector (7 downto 0);
             douta : out std_logic_vector (11 downto 0));
     end component ;
 
-    component pacman_sprite2 is
+    component cc_cer_der is
         port (
             clka: in std_logic ;
             addra: in std_logic_vector (7 downto 0);
             douta : out std_logic_vector (11 downto 0));
     end component ;
 
-    component fantasma_r is
+    component cc_abi_izq is
         port (
             clka: in std_logic ;
             addra: in std_logic_vector (7 downto 0);
             douta : out std_logic_vector (11 downto 0));
     end component ;
+
+    component cc_cer_izq is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
+    component cc_abi_arr is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
+    component cc_cer_arr is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
+    component cc_abi_aba is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
+    component cc_cer_aba is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
+    -- FANTASMA VERDE
+    component fv_derecha is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+    component fv_izquierda is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+    component fv_arriba is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+    component fv_abajo is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
+    -- FANTASMA AZUL                
+    component fa_derecha is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+    component fa_izquierda is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+    component fa_arriba is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+    component fa_abajo is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
+    -- FANTASMA MARRÓN 
+    component fm_derecha is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+    component fm_izquierda is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+    component fm_arriba is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+    component fm_abajo is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
+    -- FANTASMA ROJO
+    component fr_derecha is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+    component fr_izquierda is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+    component fr_arriba is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+    component fr_abajo is
+        port (
+            clka: in std_logic ;
+            addra: in std_logic_vector (7 downto 0);
+            douta : out std_logic_vector (11 downto 0));
+    end component ;
+
 
     component dibuja is
         port (
@@ -123,6 +291,8 @@ architecture Behavioral of Top is
             eje_x : in STD_LOGIC_VECTOR (9 downto 0);
             eje_y : in STD_LOGIC_VECTOR (9 downto 0);
 
+            udlrIn : in std_logic_vector (3 downto 0);
+            udlrF1, udlrF2, udlrF3, udlrF4 : in std_logic_vector (3 downto 0);
             codigo_color : in std_logic_vector (2 downto 0);
             direccion : out STD_LOGIC_VECTOR (8 downto 0);
             RGB : out STD_LOGIC_VECTOR (11 downto 0);
@@ -133,14 +303,25 @@ architecture Behavioral of Top is
             data_bolita : in std_logic_vector (11 downto 0);
             dir_bolita: out std_logic_vector (7 downto 0);
 
-            data_cc : in std_logic_vector (11 downto 0);
-            dir_cc: out std_logic_vector (7 downto 0);
+            -- Señales comecocos
+            data_cc_abi_der, data_cc_abi_izq, data_cc_abi_arr, data_cc_abi_aba : in std_logic_vector (11 downto 0);
+            dir_cc_abi_der, dir_cc_abi_izq, dir_cc_abi_arr, dir_cc_abi_aba: out std_logic_vector (7 downto 0);
 
-            data_cc2 : in std_logic_vector (11 downto 0);
-            dir_cc2: out std_logic_vector (7 downto 0);
+            data_cc_cer_der, data_cc_cer_izq, data_cc_cer_arr, data_cc_cer_aba : in std_logic_vector (11 downto 0);
+            dir_cc_cer_der, dir_cc_cer_izq, dir_cc_cer_arr, dir_cc_cer_aba : out std_logic_vector (7 downto 0);
 
-            data_fant_r : in std_logic_vector (11 downto 0);
-            dir_fant_r: out std_logic_vector (7 downto 0));
+            -- Señales fantasmas            
+            data_fant_ver_der, data_fant_ver_izq, data_fant_ver_arr, data_fant_ver_aba : in std_logic_vector (11 downto 0);
+            dir_fant_ver_der, dir_fant_ver_izq, dir_fant_ver_arr, dir_fant_ver_aba : out std_logic_vector (7 downto 0);
+
+            data_fant_azu_der, data_fant_azu_izq, data_fant_azu_arr, data_fant_azu_aba : in std_logic_vector (11 downto 0);
+            dir_fant_azu_der, dir_fant_azu_izq, dir_fant_azu_arr, dir_fant_azu_aba : out std_logic_vector (7 downto 0);
+
+            data_fant_mar_der, data_fant_mar_izq, data_fant_mar_arr, data_fant_mar_aba : in std_logic_vector (11 downto 0);
+            dir_fant_mar_der, dir_fant_mar_izq, dir_fant_mar_arr, dir_fant_mar_aba : out std_logic_vector (7 downto 0);
+
+            data_fant_roj_der, data_fant_roj_izq, data_fant_roj_arr, data_fant_roj_aba : in std_logic_vector (11 downto 0);
+            dir_fant_roj_der, dir_fant_roj_izq, dir_fant_roj_arr, dir_fant_roj_aba : out std_logic_vector (7 downto 0));
 
     end component;
 
@@ -159,19 +340,24 @@ architecture Behavioral of Top is
 
     component MaqPACMAN is
         port(
-            clk          : in STD_LOGIC;
-            reset        : in STD_LOGIC;
-            refresh      : in STD_LOGIC;
-            empieza      : in std_logic;
-            udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
-            addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
-            dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
-            dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
-            enableMem    : out STD_LOGIC;
-            done         : out STD_LOGIC;
-            muerte       : in STD_LOGIC;
-            write        : out STD_LOGIC_VECTOR(0 DOWNTO 0)
-        );
+        
+        clk          : in STD_LOGIC;
+        reset        : in STD_LOGIC;
+        refresh      : in STD_LOGIC;
+        empieza      : in STD_LOGIC;
+        muerte       : in STD_LOGIC;
+        udlrIn       : in STD_LOGIC_VECTOR(3 downto 0);
+        addressAOut  : out STD_LOGIC_VECTOR(8 DOWNTO 0);
+        dAIn         : in STD_LOGIC_VECTOR(2 DOWNTO 0);
+        dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
+        enableMem    : out STD_LOGIC;
+        done         : out STD_LOGIC;
+        puntosOut       : out STD_LOGIC_VECTOR(6 downto 0);
+        puntosEnable : out STD_LOGIC;
+        write        : out STD_LOGIC_VECTOR(0 downto 0);
+        cc_udlr      : out std_logic_vector (3 downto 0)
+    );
+
     end component;
 
     component Fantasma1 is
@@ -431,13 +617,31 @@ begin
             move => move,
             udlrcc => udlr
         );
-
+    contador : ControlDisplayp2
+    Port map( 
+        clk => clk,
+        reset => reset,
+        enable => puntosEnable,
+        vel => "00",
+        updown =>'0',
+        A => A, 
+        B => B,
+        C => C,
+        D => D,
+        E => E,
+        F => F,
+        G => G,
+        DP => DP, 
+        AN => AN
+        );
     comecocos :  MaqPACMAN
         port map(
             clk => clk,
             reset  => reset,
             refresh  => refreshAux,
             empieza =>doneG4,
+            puntosOut => puntos, 
+            puntosEnable => puntosEnable,
             udlrIn  => udlr,
             addressAOut  =>addraInCC,
             dAIn     =>dataOut,
@@ -445,7 +649,9 @@ begin
             enableMem    =>enableComecocos,
             done         =>doneCC,
             write        => writeComeCocos,
-            muerte => muertoghost
+            muerte => muertoghost,
+            
+            cc_udlr => aux_last_udlr_cc 
         );
 
     ghost1 :  Fantasma1
@@ -546,26 +752,165 @@ begin
             douta => aux_douta_bolita
         );
 
-    cc_sprite : pacman_sprite
+    -- SPRITES PACMANS
+    pacman_abi_der : cc_abi_der
         port map(
             clka =>clk,
-            addra => aux_addra_cc,
-            douta => aux_douta_cc
+            addra => aux_addra_cc_abi_der ,
+            douta => aux_douta_cc_abi_der
         );
 
-    cc_sprite2 : pacman_sprite2
+    pacman_cer_der : cc_cer_der
         port map(
             clka =>clk,
-            addra => aux_addra_cc2,
-            douta => aux_douta_cc2
+            addra => aux_addra_cc_cer_der ,
+            douta => aux_douta_cc_cer_der
         );
 
-    fant_r1 : fantasma_r
+    pacman_abi_izq : cc_abi_izq
         port map(
             clka =>clk,
-            addra => aux_addra_fant_r,
-            douta => aux_douta_fant_r
+            addra => aux_addra_cc_abi_izq ,
+            douta => aux_douta_cc_abi_izq
         );
+
+    pacman_cer_izq : cc_cer_izq
+        port map(
+            clka =>clk,
+            addra => aux_addra_cc_cer_izq ,
+            douta => aux_douta_cc_cer_izq
+        );
+
+    pacman_abi_arr : cc_abi_arr
+        port map(
+            clka =>clk,
+            addra => aux_addra_cc_abi_arr ,
+            douta => aux_douta_cc_abi_arr
+        );
+
+    pacman_cer_arr : cc_cer_arr
+        port map(
+            clka =>clk,
+            addra => aux_addra_cc_cer_arr ,
+            douta => aux_douta_cc_cer_arr
+        );
+
+    pacman_abi_aba : cc_abi_aba
+        port map(
+            clka =>clk,
+            addra => aux_addra_cc_abi_aba ,
+            douta => aux_douta_cc_abi_aba
+        );
+
+    pacman_cer_aba : cc_cer_aba
+        port map(
+            clka =>clk,
+            addra => aux_addra_cc_cer_aba ,
+            douta => aux_douta_cc_cer_aba
+        );
+
+
+    -- SPRITES FANTASMAS        
+    fant_ver_der : fv_derecha
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_ver_der,
+            douta => aux_douta_fant_ver_der
+        );
+    fant_ver_izq : fv_izquierda
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_ver_izq,
+            douta => aux_douta_fant_ver_izq
+        );
+    fant_ver_arr : fv_arriba
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_ver_arr,
+            douta => aux_douta_fant_ver_arr
+        );
+    fant_ver_aba : fv_abajo
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_ver_aba,
+            douta => aux_douta_fant_ver_aba
+        );
+
+    fant_azu_der : fa_derecha
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_azu_der,
+            douta => aux_douta_fant_azu_der
+        );
+    fant_azu_izq : fa_izquierda
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_azu_izq,
+            douta => aux_douta_fant_azu_izq
+        );
+    fant_azu_arr : fa_arriba
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_azu_arr,
+            douta => aux_douta_fant_azu_arr
+        );
+    fant_azu_aba : fa_abajo
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_azu_aba,
+            douta => aux_douta_fant_azu_aba
+        );
+
+    fant_mar_der : fm_derecha
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_mar_der,
+            douta => aux_douta_fant_mar_der
+        );
+    fant_mar_izq : fm_izquierda
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_mar_izq,
+            douta => aux_douta_fant_mar_izq
+        );
+    fant_mar_arr : fm_arriba
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_mar_arr,
+            douta => aux_douta_fant_mar_arr
+        );
+    fant_mar_aba : fm_abajo
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_mar_aba,
+            douta => aux_douta_fant_mar_aba
+        );
+
+    fant_roj_der : fr_derecha
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_roj_der,
+            douta => aux_douta_fant_roj_der
+        );
+    fant_roj_izq : fr_izquierda
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_roj_izq,
+            douta => aux_douta_fant_roj_izq
+        );
+    fant_roj_arr : fr_arriba
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_roj_arr,
+            douta => aux_douta_fant_roj_arr
+        );
+    fant_roj_aba : fr_abajo
+        port map(
+            clka => clk,
+            addra => aux_addra_fant_roj_aba,
+            douta => aux_douta_fant_roj_aba
+        );
+
 
     pintor : dibuja
         port map(
@@ -574,6 +919,11 @@ begin
             eje_x => ejx,
             eje_y =>ejy,
 
+            udlrIn => aux_last_udlr_cc ,
+            udlrF1 => udlr_ghost1 ,
+            udlrF2 => udlr_ghost2 ,
+            udlrF3 => udlr_ghost3 ,
+            udlrF4 => udlr_ghost4 ,
             codigo_color => datbOut,
             direccion => addrbIn,
 
@@ -583,14 +933,63 @@ begin
             data_bolita => aux_douta_bolita,
             dir_bolita => aux_addra_bolita,
 
-            data_cc => aux_douta_cc ,
-            dir_cc => aux_addra_cc ,
+            -- Señales comecocos
+            data_cc_abi_der => aux_douta_cc_abi_der  ,
+            dir_cc_abi_der => aux_addra_cc_abi_der  ,
+            data_cc_cer_der => aux_douta_cc_cer_der  ,
+            dir_cc_cer_der => aux_addra_cc_cer_der  ,
 
-            data_cc2 => aux_douta_cc2 ,
-            dir_cc2 => aux_addra_cc2 ,
+            data_cc_abi_izq => aux_douta_cc_abi_izq  ,
+            dir_cc_abi_izq => aux_addra_cc_abi_izq  ,
+            data_cc_cer_izq => aux_douta_cc_cer_izq  ,
+            dir_cc_cer_izq => aux_addra_cc_cer_izq  ,
 
-            data_fant_r => aux_douta_fant_r  ,
-            dir_fant_r => aux_addra_fant_r  ,
+            data_cc_abi_arr => aux_douta_cc_abi_arr  ,
+            dir_cc_abi_arr => aux_addra_cc_abi_arr  ,
+            data_cc_cer_arr => aux_douta_cc_cer_arr  ,
+            dir_cc_cer_arr => aux_addra_cc_cer_arr  ,
+
+            data_cc_abi_aba => aux_douta_cc_abi_aba  ,
+            dir_cc_abi_aba => aux_addra_cc_abi_aba  ,
+            data_cc_cer_aba => aux_douta_cc_cer_aba  ,
+            dir_cc_cer_aba => aux_addra_cc_cer_aba  ,
+
+            -- Señales fantasmas
+            data_fant_ver_der => aux_douta_fant_ver_der ,
+            dir_fant_ver_der => aux_addra_fant_ver_der ,
+            data_fant_ver_izq => aux_douta_fant_ver_izq ,
+            dir_fant_ver_izq => aux_addra_fant_ver_izq ,
+            data_fant_ver_arr => aux_douta_fant_ver_arr ,
+            dir_fant_ver_arr => aux_addra_fant_ver_arr ,
+            data_fant_ver_aba => aux_douta_fant_ver_aba ,
+            dir_fant_ver_aba => aux_addra_fant_ver_aba ,
+
+            data_fant_azu_der => aux_douta_fant_azu_der ,
+            dir_fant_azu_der => aux_addra_fant_azu_der ,
+            data_fant_azu_izq => aux_douta_fant_azu_izq ,
+            dir_fant_azu_izq => aux_addra_fant_azu_izq ,
+            data_fant_azu_arr => aux_douta_fant_azu_arr ,
+            dir_fant_azu_arr => aux_addra_fant_azu_arr ,
+            data_fant_azu_aba => aux_douta_fant_azu_aba ,
+            dir_fant_azu_aba => aux_addra_fant_azu_aba ,
+
+            data_fant_mar_der => aux_douta_fant_mar_der ,
+            dir_fant_mar_der => aux_addra_fant_mar_der ,
+            data_fant_mar_izq => aux_douta_fant_mar_izq ,
+            dir_fant_mar_izq => aux_addra_fant_mar_izq ,
+            data_fant_mar_arr => aux_douta_fant_mar_arr ,
+            dir_fant_mar_arr => aux_addra_fant_mar_arr ,
+            data_fant_mar_aba => aux_douta_fant_mar_aba ,
+            dir_fant_mar_aba => aux_addra_fant_mar_aba ,            
+            
+            data_fant_roj_der => aux_douta_fant_roj_der ,
+            dir_fant_roj_der => aux_addra_fant_roj_der ,
+            data_fant_roj_izq => aux_douta_fant_roj_izq ,
+            dir_fant_roj_izq => aux_addra_fant_roj_izq ,
+            data_fant_roj_arr => aux_douta_fant_roj_arr ,
+            dir_fant_roj_arr => aux_addra_fant_roj_arr ,
+            data_fant_roj_aba => aux_douta_fant_roj_aba ,
+            dir_fant_roj_aba => aux_addra_fant_roj_aba ,
 
             RGB => RGBaux
         );
@@ -598,7 +997,7 @@ begin
     driver: VGA_DRIVER
         port map(
             clk => clk,
-            reset=> '0',
+            reset=> reset,
             RGBin=> RGBaux,
             VS =>VS,
             HS =>HS,
