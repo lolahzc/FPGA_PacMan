@@ -15,7 +15,10 @@ entity MaqPACMAN is
         dAOut        : out STD_LOGIC_VECTOR(2 DOWNTO 0);
         enableMem    : out STD_LOGIC;
         done         : out STD_LOGIC;
-        write        : out STD_LOGIC_VECTOR(0 downto 0)
+        puntosOut       : out STD_LOGIC_VECTOR(6 downto 0);
+        puntosEnable : out STD_LOGIC;
+        write        : out STD_LOGIC_VECTOR(0 downto 0);
+        cc_udlr      : out std_logic_vector (3 downto 0)
     );
 end MaqPACMAN;
 
@@ -34,6 +37,9 @@ architecture Behavioral of MaqPACMAN is
     signal p_contVidas,contVidas : unsigned (1 downto 0);
     signal gameOver, p_gameOver : std_logic ;
     signal enableMemoria,p_enableMemoria: std_logic :='1';
+    signal p_puntoEnable,puntoEnable: std_logic :='0';
+     signal p_puntos,puntos : unsigned (6 downto 0);
+    signal aux_udlr_cc : std_logic_vector (3 downto 0);
 begin
 
     sync: process(clk, reset)
@@ -47,6 +53,8 @@ begin
             posx_ant <= (others => '0');
             ciclos <= "00000";
             contVidas <= "00";
+            puntoEnable <= '0';
+            puntos <= (others => '0');
             gameOver <= '0';
             addressAOut <=(others => '0');
             dAOut <= "001";
@@ -63,11 +71,13 @@ begin
             estado <= p_estado;
             posx <= p_posx;
             posy <= p_posy;
+            puntoEnable <= p_puntoEnable;
             gameOver <= p_gameOver;
             choque<=p_choque;
             posx_ant <= p_posx_ant;
             posy_ant <= p_posy_ant;
             hayMuro <= p_hayMuro;
+            puntos <= p_puntos;
             write <= p_write;
             ciclos <= p_ciclo;
             contVidas <= p_contVidas;
@@ -77,7 +87,7 @@ begin
         end if;
     end process;
 
-    comb: process(estado, muerte, refresh, empieza, p_last_udlr,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, done_reg, p_posy, posx,posx_ant,posy_ant, posy,ciclos,contVidas, choque, enableMemoria, gameOver)
+    comb: process(estado, muerte, refresh, puntos, empieza, p_last_udlr,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, done_reg, p_posy, posx,posx_ant,posy_ant, posy,ciclos,contVidas, choque, enableMemoria, gameOver)
     begin
         -- Default outputs
 
@@ -99,12 +109,14 @@ begin
         done_reg <= '0';
         p_hayMuro <= hayMuro;
         p_gameOver <= gameOver;
+        p_puntos <= puntos;
+        p_puntoEnable<= '0';
         case estado is
             when reposo =>                --En reposo que dibuje el pacman en su posición
-            
-                    if(gameOver = '1') then
+
+                if(gameOver = '1') then
                     p_estado <= reposo;
-                    else
+                else
                     p_posx <= "0001";  -- Initial X position
                     p_posy <= "00001"; -- Initial Y position
                     p_Dout <= "011";   -- Draw Pac-Man
@@ -113,74 +125,75 @@ begin
                     p_udlr <= udlrIn;
                     p_estado <= espera;
                     p_choque <= '0';
-                    end if;
-                               
-            when espera =>
-             p_enableMemoria <= '0'; -- que no toque nada de memoria     
-             if((muerte = '0' AND choque = '0') ) then -- es decir, si el pacman no se ha comido al fantasma ni viceversa
-                if(empieza ='1' ) then
-                p_estado <= botonDireccion;
-                else
-                P_estado <= estado;                 
                 end if;
-             else
-             
-            if(choque = '1') then
-            done_reg <='1';
-            else 
-            done_reg <='0';
-            end if; 
-            p_estado <=  reposo; 
-            p_contVidas <= contVidas + 1;
-            if(contVidas >=3) then
-            p_gameOver<='1';
-            p_estado <= reposo;  
-            end if;
-            end if;
-       
+
+            when espera =>
+                p_enableMemoria <= '0'; -- que no toque nada de memoria     
+                if((muerte = '0' AND choque = '0') ) then -- es decir, si el pacman no se ha comido al fantasma ni viceversa
+                    if(empieza ='1' ) then
+                        p_estado <= botonDireccion;
+                    else
+                        P_estado <= estado;
+                    end if;
+                else
+
+                    if(choque = '1') then
+                        done_reg <='1';
+                    else
+                        done_reg <='0';
+                    end if;
+                    p_estado <=  reposo;
+                    p_contVidas <= contVidas + 1;
+                    if(contVidas >=3) then
+                        p_gameOver<='1';
+                        p_estado <= reposo;
+                    end if;
+                end if;
+
             when botonDireccion =>
-            p_enableMemoria <= '1'; --dibuja un cero por donde va pasando el comecocos
+                p_enableMemoria <= '1'; --dibuja un cero por donde va pasando el comecocos
                 p_udlr <= udlrIn;
                 p_posx_ant <= posx;
                 p_posy_ant <= posy;
                 p_write <= "1";
+                p_puntos <= puntos;
                 p_Dout <= "000";
                 p_address <= posx_ant & posy_ant;
                 p_ciclo <= ciclos +1;
 
                 -- Comparación entre last_udlr y udlr
                 if (hayMuro = '1') then
-                      p_udlr <= last_udlr; -- Reutiliza la dirección anterior si hay muro
-                      p_estado <= estado;
-                      p_hayMuro <= '1';
-                end if;
-            if(ciclos >2) then --dos ciclos para asegurar que ha pasado el tiempo suficiente
-                if udlr = "1000" then
-                    p_posx <= std_logic_vector(unsigned(posx) - 1);
-                    p_estado <= movimiento;
-                elsif udlr = "0100" then
-                    p_posx <= std_logic_vector(unsigned(posx) + 1);
-                    p_estado <= movimiento;
-                elsif udlr = "0010" then
-                    p_posy <= std_logic_vector(unsigned(posy) - 1);
-                    p_estado <= movimiento;
-                elsif udlr = "0001" then
-                    p_posy <= std_logic_vector(unsigned(posy) + 1);
-                    p_estado <= movimiento;
-                else
-                    p_hayMuro <= '1'; -- Si no sabe qué hacer que coja el anterior (como si hubiese un muro)
+                    p_udlr <= last_udlr; -- Reutiliza la dirección anterior si hay muro
                     p_estado <= estado;
+                    p_hayMuro <= '1';
                 end if;
-                
+                if(ciclos >2) then --dos ciclos para asegurar que ha pasado el tiempo suficiente
+                    if udlr = "1000" then
+                        p_posx <= std_logic_vector(unsigned(posx) - 1);
+                        p_estado <= movimiento;
+                    elsif udlr = "0100" then
+                        p_posx <= std_logic_vector(unsigned(posx) + 1);
+                        p_estado <= movimiento;
+                    elsif udlr = "0010" then
+                        p_posy <= std_logic_vector(unsigned(posy) - 1);
+                        p_estado <= movimiento;
+                    elsif udlr = "0001" then
+                        p_posy <= std_logic_vector(unsigned(posy) + 1);
+                        p_estado <= movimiento;
+                    else
+                        p_hayMuro <= '1'; -- Si no sabe qué hacer que coja el anterior (como si hubiese un muro)
+                        p_estado <= estado;
+                    end if;
+
                 else p_estado <=estado;
                 end if;
-                
+
             when movimiento =>
-                    p_address <= posx_ant & posy_ant;
-                    p_Dout <= "000";
-                    p_write <= "1";
-                    p_estado <= comprueboDireccion;
-               
+                p_address <= posx_ant & posy_ant;
+                p_Dout <= "000";
+                p_write <= "1";
+                p_estado <= comprueboDireccion;
+
             when comprueboDireccion =>
                 p_write <= "0";
                 p_address <= p_posx & p_posy;
@@ -196,6 +209,11 @@ begin
                 p_write <= "1";
                 p_estado <= pintaPacman;
                 p_address <= p_posx & p_posy;
+                if(daIn ="010") then --Si hay bola
+                 p_puntoEnable <= '1';
+                p_puntos <= puntos +1;
+                
+                end if;
                 if(dAIn = "001") then --Si hay muro. 
                     --Primero he puesto un cero, si hay un muro se escribe arriba y vuelve a movimiento
                     if(last_udlr /= udlr) then --Si hay muro, me quedo en la posición en la que estaba para no comerme el muro
@@ -204,26 +222,31 @@ begin
                         p_last_udlr <= last_udlr;
                         p_hayMuro<='1';
                         p_estado <= botonDireccion;
+                        aux_udlr_cc  <= last_udlr ;
+
                     else
 
                         p_posx <= posx_ant; -- p_posx es donde estoy mirando para ir y posx_ant es donde estaba el pacman antes
                         p_posy <= posy_ant;
                         p_estado <= pintaPacman;
                         p_hayMuro<='0';
+                        aux_udlr_cc  <= udlr ;
+
                     end if;
                 --Esto pinta el pacman en la posición anterior
 
-                    elsif(dAIn = "100" or dAIn = "110" or dAIn = "101" or dAIn = "111") then               
+                elsif(dAIn = "100" or dAIn = "110" or dAIn = "101" or dAIn = "111") then
                     p_hayMuro<='0';
                     p_choque <='1';
                     p_estado <= espera;
                     p_write <= "0";
-                    
+
                 else
                     p_hayMuro<='0';
                     p_last_udlr <= udlr;
+                    aux_udlr_cc  <= udlr ;
                 end if;
-                
+
             when pintaPacman => --Aquí pinto en la casilla siguiente o en la anterior en función de confirmo dirección
                 p_address <= p_posx & p_posy;
                 p_ciclo <= ciclos;
@@ -249,5 +272,8 @@ begin
                 p_estado <= estado;
         end case;
     end process;
-enableMem <= enableMemoria;
+    puntosOut <= std_logic_vector(puntos);
+    puntosEnable <=puntoEnable;
+    enableMem <= enableMemoria;
+    cc_udlr  <= aux_udlr_cc;
 end Behavioral;
