@@ -69,7 +69,7 @@ begin
                 udlrcc <= "0001";
                 move <='1';
 
-            when others => -- none (or more than one at the same time)
+            when others => -- Si recibe más de un valor a la vez
                 udlrcc <= "0000";
         end case;
     end process;
