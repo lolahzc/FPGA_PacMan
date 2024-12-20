@@ -4,39 +4,49 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity PacMan_Sound is
     Port (
-        CLK_IN    : in  STD_LOGIC; 
+        reset : in STD_LOGIC;
+        CLK_IN    : in  STD_LOGIC;  
+        muerteSound : in STD_LOGIC;
         AUDIO_OUT : out STD_LOGIC   -- Salida de audio 
     );
 end PacMan_Sound;
 
 architecture Behavioral of PacMan_Sound is
- 
-    constant CLK_FREQ : integer := 100_000_000;
-    constant FREQ_LOW  : integer := 900; --Frencuencias para las notas que del Pacman
+    -- Frecuencia del reloj
+    constant CLK_FREQ : integer := 100_000_000;  
+    -- Frecuencias de las notas
+    constant FREQ_LOW  : integer := 900;
     constant FREQ_HIGH : integer := 1046;
     constant HALF_PERIOD_LOW  : integer := CLK_FREQ / (2 * FREQ_LOW);
     constant HALF_PERIOD_HIGH : integer := CLK_FREQ / (2 * FREQ_HIGH);
-    constant NOTE_DURATION_MS : integer := 130; --Duración de la nota
-    constant NOTE_DURATION    : integer := (CLK_FREQ / 1000) * NOTE_DURATION_MS;
 
-    type STATE_TYPE is (S_LOW, S_HIGH); --Máquina de estados para imitar el sonido
+--Duración de la frecuencia
+    constant NOTE_DURATION_MS : integer := 130; 
+    constant NOTE_DURATION    : integer := (CLK_FREQ / 1000) * NOTE_DURATION_MS;
+    type estados is (muerte, vivo);
+    type STATE_TYPE is (S_LOW, S_HIGH);
     signal state    : STATE_TYPE := S_LOW;
+
     signal counter  : integer := 0;  
     signal tone_cnt : integer := 0;  
     signal half_per : integer := HALF_PERIOD_LOW;
     signal audio_sig: STD_LOGIC := '0';
+    signal estado,p_estado : estados;
 
 begin
 
-    process(CLK_IN)
+    process(CLK_IN,reset)
     begin
-        if rising_edge(CLK_IN) then
-            -- Controla el tiempo que se mantiene cada nota
+    if(reset = '1') then
+     audio_sig <= '0';
+        elsif rising_edge(CLK_IN) then
+            
+            if(muerteSound = '1') then
             if counter < NOTE_DURATION then
                 counter <= counter + 1;
             else
                 counter <= 0;
-                -- Nota baja y alta
+                -- Alterna entre nota baja y alta 
                 if state = S_LOW then
                     state    <= S_HIGH;
                     half_per <= HALF_PERIOD_HIGH;
@@ -53,6 +63,7 @@ begin
                 tone_cnt <= 0;
                 audio_sig <= not audio_sig;
             end if;
+        end if;
         end if;
     end process;
 
