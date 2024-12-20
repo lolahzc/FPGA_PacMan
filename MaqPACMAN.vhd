@@ -96,7 +96,7 @@ begin
         p_last_udlr <= last_udlr; --Mantiene el valor del anterior
         p_udlr <= udlr; --Mantiene el valor del anterior
         p_ciclo <= "00000"; --Resetea el ciclo
-        p_contVidas <= contVidas;
+        p_contVidas <= contVidas; -- Contador de vidas
         p_Dout <= "0000"; --Pone vacío por defecto
         p_write <= "0"; --Por defecto no escribe
         p_estado <= estado; --Se manteine en el mismo estado
@@ -107,14 +107,14 @@ begin
         p_posy_ant <= posy_ant;
         p_choque <= choque;
         done_reg <= '0';
-        p_hayMuro <= hayMuro;
+        p_hayMuro <= hayMuro; --Mantiene los valores
         p_gameOver <= gameOver;
         p_puntos <= puntos;
         p_puntoEnable<= '0';
         case estado is
             when reposo =>                --En reposo que dibuje el pacman en su posición
 
-                if(gameOver = '1') then
+                if(gameOver = '1') then  --Si ha muerto, sale la pantalla de gameover
                     p_estado <= reposo;
                 else
                     p_posx <= "0001";  -- Initial X position
@@ -124,34 +124,34 @@ begin
                     p_write <= "1";
                     p_udlr <= udlrIn;
                     p_estado <= espera;
-                    p_choque <= '0';
+                    p_choque <= '0'; -- Si se había chocado, como ya está en el inicio, ya se pone a cero la variable
                 end if;
 
             when espera =>
-                p_enableMemoria <= '0'; -- que no toque nada de memoria     
-                if((muerte = '0' AND choque = '0') ) then -- es decir, si el pacman no se ha comido al fantasma ni viceversa
-                    if(empieza ='1' ) then
+                p_enableMemoria <= '0'; -- No accede a memoria     
+                if((muerte = '0' AND choque = '0') ) then -- Es decir, si el comecocos está vivo
+                    if(empieza ='1' ) then -- Si ha recibido la señal de que empiece
                         p_estado <= botonDireccion;
                     else
                         P_estado <= estado;
                     end if;
                 else
 
-                    if(choque = '1') then
+                    if(choque = '1') then --Si el pacman ha detectado un fantasma
                         done_reg <='1';
                     else
                         done_reg <='0';
-                    end if;
+                    end if;  --Todo esto significa que el comecocos está muerto 
                     p_estado <=  reposo;
-                    p_contVidas <= contVidas + 1;
-                    if(contVidas >=3) then
+                    p_contVidas <= contVidas + 1; --Este es el contaodr que indica las veces que ha muerto
+                    if(contVidas >=3) then --Si se ha quedado sin vidas, muere
                         p_gameOver<='1';
                         p_estado <= reposo;
                     end if;
                 end if;
 
             when botonDireccion =>
-                p_enableMemoria <= '1'; --dibuja un cero por donde va pasando el comecocos
+                p_enableMemoria <= '1'; --Dibuja un cero por donde va pasando el comecocos
                 p_udlr <= udlrIn;
                 p_posx_ant <= posx;
                 p_posy_ant <= posy;
@@ -162,12 +162,12 @@ begin
                 p_ciclo <= ciclos +1;
 
                 -- Comparación entre last_udlr y udlr
-                if (hayMuro = '1') then
+                if (hayMuro = '1') then --Si hay muro
                     p_udlr <= last_udlr; -- Reutiliza la dirección anterior si hay muro
                     p_estado <= estado;
                     p_hayMuro <= '1';
                 end if;
-                if(ciclos >2) then --dos ciclos para asegurar que ha pasado el tiempo suficiente
+                if(ciclos >2) then --Dos ciclos para asegurar que ha pasado el tiempo suficiente
                     if udlr = "1000" then
                         p_posx <= std_logic_vector(unsigned(posx) - 1);
                         p_estado <= movimiento;
@@ -188,24 +188,24 @@ begin
                 else p_estado <=estado;
                 end if;
 
-            when movimiento =>
+            when movimiento => --Pone un cero en la posición anterior
                 p_address <= posx_ant & posy_ant;
                 p_Dout <= "0000";
                 p_write <= "1";
                 p_estado <= comprueboDireccion;
 
-            when comprueboDireccion =>
+            when comprueboDireccion => --En este estado pone la dirección de la casilla a la que se quiere leer para poder leerla en el siguiente estado como el dato que recibe de la memoria
                 p_write <= "0";
                 p_address <= p_posx & p_posy;
                 p_ciclo <= ciclos +1;
 
-                if(ciclos = 5) then
+                if(ciclos = 5) then --Nos aseguramos de que haya recibido el dato de la memoria para el siguiente estado
                     p_estado <= confirmoDireccion;
                 else
                     p_estado <= comprueboDireccion;
                 end if;
 
-            when confirmoDireccion => --Aquí verifico si hay muro o no --ASIGNO LA SIGUIENTE SALIDA
+            when confirmoDireccion => --Aquí verifico si hay muro, fantasma, bola... --ASIGNO LA SIGUIENTE SALIDA
                 p_write <= "1";
                 p_estado <= pintaPacman;
                 p_address <= p_posx & p_posy;
@@ -224,7 +224,7 @@ begin
                         p_estado <= botonDireccion;
                         aux_udlr_cc  <= last_udlr ;
 
-                    else
+                    else -- Si hay muro pero puede ir en la dirección anterior
 
                         p_posx <= posx_ant; -- p_posx es donde estoy mirando para ir y posx_ant es donde estaba el pacman antes
                         p_posy <= posy_ant;
@@ -235,13 +235,13 @@ begin
                     end if;
                 --Esto pinta el pacman en la posición anterior
 
-                elsif(dAIn = "0100" or dAIn = "0110" or dAIn = "0101" or dAIn = "0111") then
+                elsif(dAIn = "0100" or dAIn = "0110" or dAIn = "0101" or dAIn = "0111") then --Si hay fantasma
                     p_hayMuro<='0';
-                    p_choque <='1';
+                    p_choque <='1'; --Si hay fantasma es que se ha chocado
                     p_estado <= espera;
                     p_write <= "0";
 
-                else
+                else --Si no detecta nada inusual, actualiza las variables y pone que no hay muro
                     p_hayMuro<='0';
                     p_last_udlr <= udlr;
                     aux_udlr_cc  <= udlr ;
@@ -255,7 +255,7 @@ begin
                 if refresh = '1' then
                     p_ciclo <= ciclos +1;
                     p_enableMemoria <='1';
-                    if ciclos >20 then
+                    if ciclos >20 then --Espera 20 refresh
                         p_write <= "0";
                         p_udlr <= udlrIn;
                         p_estado <= espera;
@@ -271,7 +271,7 @@ begin
             when others =>
                 p_estado <= estado;
         end case;
-    end process;
+    end process; --Asignación variables para las salidas
     puntosOut <= std_logic_vector(puntos);
     puntosEnable <=puntoEnable;
     enableMem <= enableMemoria;
