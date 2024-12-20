@@ -41,12 +41,11 @@ begin
     begin
     
     lfsr <= seed;
-        if cont = 500 then
+        if cont = 500 then --Valor que ajusta la velocidad a la que son dadas las direcciones aleatorias
             -- Si se activa el refresh, se carga la semilla inicial
-            -- Semilla inicial (nunca todo cero)
-            cont <= "00000000000";
+            cont <= "00000000000"; 
             Aux <= Aux +1;
-            case Aux is
+            case Aux is --Estados distintos para darle más aleatoriedad y que no se repitan
                 when "00000000001" => -- no movement
                 lfsr <= "10100"+seed;
                 when "00000000010" => -- no movement
@@ -63,7 +62,7 @@ begin
             lfsr <= p_lfsr;
             cont <= p_cont;
             cont3 <= p_cont3;
-            Aux <= Aux; -- -- COMPROBAR SI AL QUITAR EL LATCH CON ESTO SIGUE FUNCIONANDO
+            Aux <= Aux; 
 
         end if;
     end process;
