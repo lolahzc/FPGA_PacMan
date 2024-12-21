@@ -25,7 +25,6 @@ entity Selector is
     Port (
         clk        : in  STD_LOGIC;
         reset      : in  STD_LOGIC;
-        gameOverIn : in STD_LOGIC;
         addraInCC  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
         addraInG1  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
         addraInG2  : in  STD_LOGIC_VECTOR(8 DOWNTO 0);
@@ -51,13 +50,12 @@ entity Selector is
         GHOST4     : in  STD_LOGIC;
         ADDRESS    : out STD_LOGIC_VECTOR(8 DOWNTO 0);
         DATA       : out STD_LOGIC_VECTOR(3 DOWNTO 0);
-        WRITE      : out STD_LOGIC_VECTOR(0 DOWNTO 0);
-        dataGameOver  : in  STD_LOGIC_VECTOR(3 DOWNTO 0)
+        WRITE      : out STD_LOGIC_VECTOR(0 DOWNTO 0)
     );
 end Selector;
 
 architecture Behavioral of Selector is
-    type estados is (normal, reseteo,gameover);
+    type estados is (normal, reseteo);
     signal p_address : STD_LOGIC_VECTOR(8 DOWNTO 0) := (others => '0');
     signal p_data    : STD_LOGIC_VECTOR(3 DOWNTO 0) := (others => '0');
     signal p_write   : STD_LOGIC_VECTOR(0 DOWNTO 0) := (others => '0');
@@ -66,14 +64,14 @@ architecture Behavioral of Selector is
     signal estado, p_estado : estados; 
 begin
 
-    -- Cálculo de fila y columna
+    -- CÃ¡lculo de fila y columna
     fila    <= eje_y(7 DOWNTO 4);
     columna <= eje_x(4 DOWNTO 0);
 
-    resetear: process(clk,reset, fila, estado, columna, PACMAN, GHOST1, GHOST2, GHOST3, GHOST4,
+    resetear: process(clk,reset, fila, columna, PACMAN, GHOST1, GHOST2, GHOST3, GHOST4,
                      addraInCC, addraInG1, addraInG2, addraInG3, addraInG4,
                      dataCC, dataG1, dataG2, dataG3, dataG4, dataReset,
-                     writeCC, writeG1, writeG2, writeG3, writeG4, dataGameOver,gameOverIn)
+                     writeCC, writeG1, writeG2, writeG3, writeG4)
     begin
     if(rising_edge(clk)) then
     estado <= p_estado;
@@ -107,11 +105,10 @@ begin
                 p_write   <= (others => '0');
             end if;
             if(reset ='1') then
+            
             p_estado <= reseteo;
             end if;
-            if(gameOverIn = '1') then
-            p_estado <= gameover;
-            end if;
+        
         when reseteo =>
             p_data    <= dataReset;
             p_address <= fila & columna;
@@ -121,16 +118,9 @@ begin
             P_estado <= normal;
             
             end if;
-         when gameover =>
-            p_data    <= dataGameOver;
-            p_address <= fila & columna;
-            p_write   <= "1";
-            p_estado <= estado;
-            if(columna = "11111" AND fila = "1111") then
-            P_estado <= normal;
-            end if;
+            
         end case;
-            -- Determina quién está activo y asigna en consecuencia
+            -- Determina quiÃ©n estÃ¡ activo y asigna en consecuencia
            
     end process;
 

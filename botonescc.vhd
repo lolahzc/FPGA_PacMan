@@ -33,10 +33,7 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity gestion_botones is
-  Port ( 
-  clk : in std_logic;
-  reset : in std_logic;
-  up : in std_logic;
+  Port ( up : in std_logic;
   down : in std_logic;
   left : in std_logic;
   right : in std_logic;
@@ -47,43 +44,34 @@ end gestion_botones;
 
 architecture Behavioral of gestion_botones is
 
-    signal udlr_in, p_udlr,udlr : std_logic_vector(3 downto 0);
+    signal udlr_in : std_logic_vector(3 downto 0);
     
 begin
 
-    -- Concatenaci�n de se�ales
+    -- Concatenación de señales
     udlr_in <= up & down & left & right;
-    sync : process(clk,reset)
-        begin
-    if( reset = '1') then
-          udlr <= "0000";
-        elsif (rising_edge(clk)) then
-            udlr <= p_udlr;
-    end if;
-    
-    end process;
-    comb: process (udlr_in,udlr)  -- Sensibilidad a las se�ales relevantes
+
+    process (udlr_in)  -- Sensibilidad a las señales relevantes
     
     begin
     move <= '0';
-    p_udlr <= udlr;
- 
         case udlr_in is
             when "1000" => -- up
-                p_udlr <= "1000";
+                udlrcc <= "1000";
                 move <='1';
             when "0100" => -- down
-                p_udlr <= "0100";
+                udlrcc <= "0100";
                 move <='1';
             when "0010" => -- left
-                p_udlr <= "0010";
+                udlrcc <= "0010";
                 move <='1';
             when "0001" => -- right
-                p_udlr <= "0001";
+                udlrcc <= "0001";
                 move <='1';
-            when others =>
-            p_udlr <= udlr;
+
+            when others => -- Si recibe más de un valor a la vez
+                udlrcc <= "0000";
         end case;
     end process;
-udlrcc <= udlr;
+
 end Behavioral;

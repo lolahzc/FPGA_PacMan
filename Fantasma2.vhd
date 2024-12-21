@@ -4,7 +4,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-entity Fantasma1 is
+entity Fantasma2 is
     Port (
         clk          : in STD_LOGIC;
         reset        : in STD_LOGIC;
@@ -20,9 +20,9 @@ entity Fantasma1 is
         killghost    : out STD_LOGIC;
         write        : out STD_LOGIC_VECTOR(0 downto 0)
     );
-end Fantasma1;
+end Fantasma2;
 
-architecture Behavioral of Fantasma1 is
+architecture Behavioral of Fantasma2 is
     type estados is (reposo, espera,botonDireccion, movimiento, comprueboDireccion, confirmoDireccion,pintaPacman);
     signal estado, p_estado       : estados;
     signal p_address, last_address : std_logic_vector(8 downto 0);
@@ -76,7 +76,7 @@ begin
     end if;
 end process;
 
-comb: process(estado, refresh,done_reg, empieza, move,p_last_udlr,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, p_posy, posx,posx_ant,posy_ant, posy,ciclos, hayBola, enableMemoria )
+comb: process(estado, refresh,done_reg, empieza, move,p_last_udlr,last_udlr,udlr,hayMuro, udlrIn, dAIn, p_posx, p_posy, posx,posx_ant,posy_ant, posy,ciclos,hayBola, enableMemoria)
 begin
     -- Default outputs
     p_last_udlr <= last_udlr; --Mantiene el valor del anterior
@@ -98,16 +98,16 @@ begin
     p_enableMemoria <= enableMemoria;
     case estado is
     when reposo =>
-        p_posx <= "1110";  -- Initial X position
+        p_posx <= "0100";  -- Initial X position
         p_posy <= "11110"; -- Initial Y position
-        p_Dout <= "0100";
+        p_Dout <= "0101";
         if move = '1' then
             -- Draw Pac-Man
             p_address <= p_posx & p_posy;
             p_write <= "1";
             p_udlr <= udlrIn;
             p_estado <= espera;
-            done_reg <= '1';
+            done_reg <= '0';
         end if;
     when espera =>
         p_enableMemoria<='0';
@@ -242,7 +242,7 @@ begin
            when pintaPacman => --Aquí pinto en la casilla siguiente o en la anterior en función de confirmo dirección
                 p_address <= p_posx & p_posy;
                 p_ciclo <= ciclos;
-                p_Dout <= "0100";
+                p_Dout <= "0101";
                 p_write <= "1";
                     p_ciclo <= ciclos +1;
                    p_enableMemoria<='1';
